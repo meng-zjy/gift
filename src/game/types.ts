@@ -9,12 +9,15 @@ export interface Bounds extends Point {
   height: number;
 }
 
+export type ArtworkId = "monet-water-lilies" | "van-gogh-bedroom";
+
 export interface Story {
   id: string;
   title: string;
   kind: "memory" | "dialogue" | "intro" | "collection" | "dessert" | "gallery";
   speaker: string;
   paragraphs: string[];
+  artworkId?: ArtworkId;
 }
 
 export interface Furniture extends Bounds {
@@ -29,8 +32,18 @@ export interface Furniture extends Bounds {
     | "fridge"
     | "counter"
     | "table"
+    | "bed"
     | "painting";
-  interaction?: { label: string; action: InteractionAction; point: Point };
+  solid?: boolean;
+  artworkId?: ArtworkId;
+  doorSide?: "left" | "right" | "bottom";
+  interaction?: {
+    label: string;
+    action: InteractionAction;
+    /** Wall decorations project their reachable area onto the floor below. */
+    area?: Bounds;
+    range?: number;
+  };
 }
 
 export type InteractionAction =
@@ -40,7 +53,7 @@ export type InteractionAction =
 export interface RoomDefinition {
   id: string;
   name: string;
-  theme: "living" | "kitchen";
+  theme: "living" | "kitchen" | "bedroom";
   hint: string;
   width: number;
   height: number;

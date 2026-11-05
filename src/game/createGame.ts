@@ -2,6 +2,8 @@ import Phaser from "phaser";
 import { rooms, stories } from "../content/world";
 import { createCharacterTextures, drawRoom } from "./art";
 import { movePlayer } from "./movement";
+import { findNearby } from "./interaction";
+import { artworks } from "../content/artworks";
 import { validateWorld } from "./validateWorld";
 import type { Direction, Furniture, GameBridge, Point } from "./types";
 
@@ -20,10 +22,7 @@ class WorldScene extends Phaser.Scene {
   }
 
   preload(): void {
-    this.load.image(
-      "monet-painting",
-      `${import.meta.env.BASE_URL}art/monet-pixel.png`,
-    );
+    for (const artwork of artworks) this.load.image(artwork.id, artwork.pixel);
   }
 
   create(): void {
@@ -50,6 +49,25 @@ class WorldScene extends Phaser.Scene {
     // One persistent scene owns input; only room display objects are replaced.
     this.children.removeAll(true);
     drawRoom(this, this.room);
+    // Quiet persistent hints make discoveries possible before the proximity prompt appears.
+    for (const item of this.room.furniture.filter(
+      (furniture) => furniture.interaction,
+    )) {
+      this.add
+        .text(
+          item.x + item.width / 2,
+          item.kind === "painting" ? item.y + item.height + 5 : item.y - 8,
+          "◇",
+          {
+            fontSize: "9px",
+            color: "#fff2b8",
+            fontFamily: "monospace",
+          },
+        )
+        .setOrigin(0.5)
+        .setAlpha(0.45)
+        .setDepth(3);
+    }
     for (const item of this.room.furniture.filter(
       (furniture) => furniture.kind === "npc",
     )) {
@@ -139,21 +157,7 @@ class WorldScene extends Phaser.Scene {
   }
 
   private updateNearby(): void {
-    this.nearest =
-      this.room.furniture
-        .filter((item) => item.interaction)
-        .map((item) => ({
-          item,
-          distance: Phaser.Math.Distance.Between(
-            this.position.x,
-            this.position.y,
-            item.interaction!.point.x,
-            item.interaction!.point.y,
-          ),
-        }))
-        .filter((candidate) => candidate.distance < 43)
-        .sort((first, second) => first.distance - second.distance)[0]?.item ??
-      null;
+    this.nearest = findNearby(this.position, this.room);
     const label = this.nearest?.interaction?.label ?? null;
     if (label !== this.nearbyLabel) {
       this.nearbyLabel = label;
@@ -163,7 +167,9 @@ class WorldScene extends Phaser.Scene {
     if (this.nearest)
       this.marker.setPosition(
         this.nearest.x + this.nearest.width / 2,
-        this.nearest.y - 13,
+        this.nearest.kind === "painting"
+          ? this.nearest.y + this.nearest.height + 5
+          : this.nearest.y - 13,
       );
   }
 }

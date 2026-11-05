@@ -53,6 +53,7 @@ test("travel to kitchen, read food preferences, return repeatedly without duplic
   await openGame(page);
   await holdKey(page, "d", 1850);
   await holdKey(page, "w", 450);
+  await holdKey(page, "d", 650);
   await expect(page.getByRole("button", { name: /去厨房/ })).toBeEnabled();
   await page.keyboard.press("e");
   await expect(page.getByTestId("room-name")).toHaveText("厨房");
@@ -80,8 +81,9 @@ test("travel to kitchen, read food preferences, return repeatedly without duplic
   await page.screenshot({ path: "test-results/dessert.png", fullPage: true });
   await page.getByRole("button", { name: "关闭回忆", exact: true }).click();
   await holdKey(page, "s", 200);
-  await holdKey(page, "a", 2600);
+  await holdKey(page, "a", 3500);
   await holdKey(page, "w", 580);
+  await expect(page.getByRole("button", { name: /回客厅/ })).toBeEnabled();
   for (let trip = 0; trip < 3; trip++) {
     await page.keyboard.press("e");
     await expect(page.getByTestId("room-name")).toHaveText("客厅");
@@ -137,7 +139,7 @@ test("the painting opens actual local artworks with original and pixel views", a
   await holdKey(page, "w", 1900);
   await page.keyboard.press("e");
   await expect(
-    page.getByRole("heading", { name: "把喜欢的画，挂在家里" }),
+    page.getByRole("heading", { name: "客厅里的一池睡莲" }),
   ).toBeVisible();
   const painting = page.getByRole("img", { name: "克劳德·莫奈《睡莲》原画" });
   await expect(painting).toBeVisible();
@@ -150,9 +152,76 @@ test("the painting opens actual local artworks with original and pixel views", a
   await expect(
     page.getByRole("img", { name: "克劳德·莫奈《睡莲》像素版" }),
   ).toHaveAttribute("src", /monet-pixel.png/);
-  await page.getByRole("button", { name: "下一幅" }).click();
-  await expect(page.getByRole("img", { name: /梵高《卧室》/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: "下一幅" })).not.toBeVisible();
+  await expect(
+    page.getByRole("img", { name: /梵高《卧室》/ }),
+  ).not.toBeVisible();
   await page.screenshot({ path: "test-results/gallery.png", fullPage: true });
+});
+
+test("the bedroom has its own painting and wall openings lead back home", async ({
+  page,
+}) => {
+  await openGame(page);
+  await holdKey(page, "s", 400);
+  await page.keyboard.press("e");
+  await expect(page.getByTestId("room-name")).toHaveText("卧室");
+  await page.screenshot({ path: "test-results/bedroom.png", fullPage: true });
+  await holdKey(page, "d", 2000);
+  await holdKey(page, "w", 1600);
+  await expect(
+    page.getByRole("button", { name: /看看梵高的卧室/ }),
+  ).toBeEnabled();
+  await page.keyboard.press("e");
+  const painting = page.getByRole("img", { name: "文森特·梵高《卧室》原画" });
+  await expect(painting).toBeVisible();
+  await expect
+    .poll(() =>
+      painting.evaluate((image) => (image as HTMLImageElement).naturalWidth),
+    )
+    .toBeGreaterThan(500);
+  await expect(page.getByRole("img", { name: /莫奈/ })).not.toBeVisible();
+  await page.screenshot({
+    path: "test-results/bedroom-gallery.png",
+    fullPage: true,
+  });
+  await page.getByRole("button", { name: "关闭回忆", exact: true }).click();
+  await holdKey(page, "s", 1400);
+  await holdKey(page, "a", 2100);
+  await page.keyboard.press("e");
+  await expect(page.getByTestId("room-name")).toHaveText("客厅");
+});
+
+test("the fridge can be discovered from above and from its right side", async ({
+  page,
+}) => {
+  await openGame(page);
+  await holdKey(page, "d", 1850);
+  await holdKey(page, "w", 450);
+  await holdKey(page, "d", 650);
+  await expect(page.getByRole("button", { name: /去厨房/ })).toBeEnabled();
+  await page.keyboard.press("e");
+  await expect(page.getByTestId("room-name")).toHaveText("厨房");
+  await holdKey(page, "w", 1600);
+  await holdKey(page, "d", 430);
+  await expect(
+    page.getByRole("button", { name: /打开口味小本/ }),
+  ).toBeEnabled();
+  await page.screenshot({
+    path: "test-results/fridge-above.png",
+    fullPage: true,
+  });
+  await page.keyboard.press("e");
+  await expect(page.locator(".reader-collection")).toBeVisible();
+  await page.getByRole("button", { name: "关闭回忆", exact: true }).click();
+  await holdKey(page, "d", 900);
+  await holdKey(page, "s", 750);
+  await holdKey(page, "a", 520);
+  await expect(
+    page.getByRole("button", { name: /打开口味小本/ }),
+  ).toBeEnabled();
+  await page.keyboard.press("e");
+  await expect(page.locator(".reader-collection")).toBeVisible();
 });
 
 test("a new visitor has independent progress and restarting requires confirmation", async ({

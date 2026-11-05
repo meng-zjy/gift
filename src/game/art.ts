@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import type { Furniture, RoomDefinition } from "./types";
+import { artworks } from "../content/artworks";
 
 const colors = {
   outline: 0x394554,
@@ -58,7 +59,15 @@ export function drawRoom(scene: Phaser.Scene, room: RoomDefinition): void {
     rect(234, 203, 10, 3, 0xd9c6cb);
     rect(237, 200, 4, 9, 0xd9c6cb);
   }
-  rect(220, 288, 40, 7, 0xb08b70);
+  if (room.theme === "bedroom") {
+    rect(163, 185, 122, 77, 0x6d839c);
+    rect(167, 189, 114, 69, 0xa7b3ba);
+    rect(171, 193, 106, 61, 0x899eae);
+    for (let x = 173; x < 275; x += 10) {
+      rect(x, 187, 4, 2, 0xdfd6b7);
+      rect(x, 259, 4, 2, 0xdfd6b7);
+    }
+  }
 
   for (const furniture of room.furniture) drawFurniture(scene, furniture);
 }
@@ -120,6 +129,31 @@ function drawWalls(
     }
     rect(26, 77, 428, 7, 0x927d66);
     rect(26, 77, 428, 2, 0xd4bb95);
+  } else if (room.theme === "bedroom") {
+    rect(26, 26, 428, 56, 0x9eafbc);
+    for (let x = 30; x < 452; x += 16) rect(x, 28, 1, 48, 0xadc0c8);
+    rect(26, 77, 428, 7, 0x667f91);
+    rect(26, 77, 428, 2, 0xc8d4cb);
+    rect(87, 30, 78, 45, 0x697e90);
+    rect(91, 33, 70, 37, 0x344e70);
+    rect(125, 33, 3, 37, 0xc8d3cc);
+    rect(91, 50, 70, 2, 0xc8d3cc);
+    rect(139, 39, 7, 7, 0xf0dc9f);
+    for (const [x, y] of [
+      [100, 40],
+      [115, 45],
+      [150, 56],
+      [107, 61],
+    ])
+      rect(x, y, 1, 1, 0xe9dcb8);
+    rect(84, 29, 10, 42, 0xb3a5ba);
+    rect(158, 29, 10, 42, 0xb3a5ba);
+    rect(82, 70, 88, 4, 0xb09b83);
+    // A shaded lamp and small wall shelf make this a different room, not a palette swap.
+    rect(350, 48, 2, 20, 0x937957);
+    rect(338, 38, 26, 16, 0xe3d2a6);
+    rect(342, 35, 18, 4, 0xe3d2a6);
+    rect(345, 68, 13, 3, 0x937957);
   } else {
     rect(26, 26, 428, 56, 0xeee5cc);
     for (let y = 28; y < 77; y += 12) {
@@ -164,14 +198,16 @@ function drawFurniture(scene: Phaser.Scene, item: Furniture): void {
     frame
       .fillStyle(0xe7d9b7)
       .fillRect(item.x + 4, item.y + 4, item.width - 8, item.height - 8);
-    if (scene.textures.exists("monet-painting")) {
+    const artwork = artworks.find((entry) => entry.id === item.artworkId);
+    if (artwork && scene.textures.exists(artwork.id)) {
+      const texture = scene.textures.get(artwork.id).getSourceImage();
+      const scale = Math.min(
+        (item.width - 12) / texture.width,
+        (item.height - 12) / texture.height,
+      );
       scene.add
-        .image(
-          item.x + item.width / 2,
-          item.y + item.height / 2,
-          "monet-painting",
-        )
-        .setDisplaySize(38, 36)
+        .image(item.x + item.width / 2, item.y + item.height / 2, artwork.id)
+        .setDisplaySize(texture.width * scale, texture.height * scale)
         .setDepth(1);
     }
     return;
@@ -186,6 +222,29 @@ function drawFurniture(scene: Phaser.Scene, item: Furniture): void {
   ) => {
     brush.fillStyle(color).fillRect(item.x + dx, item.y + dy, w, h);
   };
+  if (item.kind === "door") {
+    // Cut the opening into the enclosing wall, with jambs and a floor-level threshold.
+    // This is decorative; the room boundary still contains movement until E is pressed.
+    if (item.doorSide === "bottom") {
+      rect(-3, 2, item.width + 6, item.height - 2, 0x6e665e);
+      rect(2, 0, item.width - 4, item.height, 0x344a50);
+      rect(3, 1, item.width - 6, 5, 0xb49e81);
+      rect(-3, 0, 5, item.height, 0xbda280);
+      rect(item.width - 2, 0, 5, item.height, 0xbda280);
+      rect(6, 10, item.width - 12, 3, 0x7e8879);
+    } else {
+      rect(0, -3, item.width, item.height + 6, 0x8e7a64);
+      rect(1, 0, item.width - 2, item.height, 0x344a50);
+      rect(0, -3, item.width, 4, 0xc9ae88);
+      rect(0, item.height - 1, item.width, 4, 0xc9ae88);
+      const inner = item.doorSide === "right" ? 0 : item.width - 4;
+      rect(inner, 1, 4, item.height - 2, 0xb29b7f);
+      rect(4, 5, item.width - 8, item.height - 10, 0x547070);
+      for (let y = 8; y < item.height - 5; y += 8)
+        rect(4, y, item.width - 8, 1, 0x71857b);
+    }
+    return;
+  }
   rect(3, item.height - 3, item.width, 7, 0x9c816d);
   if (item.kind === "sofa") {
     rect(0, 0, 100, 49, colors.outline);
@@ -216,12 +275,16 @@ function drawFurniture(scene: Phaser.Scene, item: Furniture): void {
     const books = [0x91aaa2, 0xc89a92, 0xe1c28b, 0x8197b2, 0xb8a3b8];
     books.forEach((color, index) => rect(7 + index * 9, 5, 6, 14, color));
     rect(0, 22, 60, 4, colors.woodLight);
-  } else if (item.kind === "door") {
-    rect(0, 0, 25, 49, colors.outline);
-    rect(3, 3, 19, 43, 0x987d6d);
-    rect(6, 6, 13, 18, 0xb49a7c);
-    rect(6, 28, 13, 13, 0xab9076);
-    rect(17, 25, 3, 3, 0xf0d08b);
+  } else if (item.kind === "bed") {
+    rect(0, 0, 100, 132, colors.outline);
+    rect(3, 3, 94, 126, 0x9a8067);
+    rect(7, 8, 86, 116, 0xe7ddc5);
+    rect(12, 12, 32, 23, 0xf5ead4);
+    rect(56, 12, 32, 23, 0xf5ead4);
+    rect(7, 41, 86, 78, 0x91a5b5);
+    rect(7, 41, 86, 9, 0xb9c9ce);
+    for (let x = 13; x < 90; x += 12) rect(x, 52, 1, 61, 0xa9bbc3);
+    rect(3, 119, 94, 7, 0x9a8067);
   } else if (item.kind === "fridge") {
     rect(0, 0, 51, 65, colors.outline);
     rect(3, 3, 45, 59, 0xa4bdba);

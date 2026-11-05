@@ -1,5 +1,6 @@
 import { PLAYER_HALF_SIZE, movePlayer } from "./movement";
 import type { Point, RoomDefinition, Story } from "./types";
+import { artworks } from "../content/artworks";
 
 /** Validate cross-room references before creating scenes, so expansion fails visibly. */
 export function validateWorld(
@@ -20,6 +21,13 @@ export function validateWorld(
     for (const item of room.furniture) {
       if (allIds.has(item.id)) throw new Error(`物件 ID 重复：${item.id}`);
       allIds.add(item.id);
+      if (
+        item.kind === "painting" &&
+        !artworks.some((artwork) => artwork.id === item.artworkId)
+      )
+        throw new Error(`物件 ${item.id} 的画作不存在`);
+      if (item.kind === "door" && !item.doorSide)
+        throw new Error(`门洞 ${item.id} 缺少墙面方向`);
       const action = item.interaction?.action;
       if (action?.type === "story" && !stories[action.storyId])
         throw new Error(`物件 ${item.id} 引用了不存在的回忆`);
@@ -33,6 +41,11 @@ export function validateWorld(
   for (const [id, story] of Object.entries(stories)) {
     if (id !== story.id || story.paragraphs.length === 0)
       throw new Error(`回忆配置无效：${id}`);
+    if (
+      story.kind === "gallery" &&
+      !artworks.some((artwork) => artwork.id === story.artworkId)
+    )
+      throw new Error(`画作回忆配置无效：${id}`);
   }
 }
 

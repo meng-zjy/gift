@@ -123,7 +123,9 @@ export function App() {
                 /{" "}
                 {room.theme === "living"
                   ? "OUR LIVING ROOM"
-                  : "SOMETHING SWEET"}
+                  : room.theme === "kitchen"
+                    ? "SOMETHING SWEET"
+                    : "A QUIET PLACE"}
               </span>
             </div>
             <button

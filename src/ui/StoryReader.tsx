@@ -33,7 +33,7 @@ export function StoryReader({
   const dialog = useRef<HTMLDialogElement>(null);
   const [pixelView, setPixelView] = useState(false);
   const last = session.step === story.paragraphs.length - 1;
-  const artwork = artworks[session.step % artworks.length];
+  const artwork = artworks.find((item) => item.id === story.artworkId);
 
   useEffect(() => {
     const element = dialog.current;
@@ -88,7 +88,7 @@ export function StoryReader({
             <span>✧</span>
           </div>
         )}
-        {story.kind === "gallery" ? (
+        {story.kind === "gallery" && artwork ? (
           <div className="artwork-viewer">
             <figure>
               <img

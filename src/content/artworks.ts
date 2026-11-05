@@ -1,7 +1,10 @@
-const base = import.meta.env.BASE_URL;
+import type { ArtworkId } from "../game/types";
+
+const base = import.meta.env?.BASE_URL ?? "/";
 
 export const artworks = [
   {
+    id: "monet-water-lilies" satisfies ArtworkId,
     title: "睡莲",
     artist: "克劳德·莫奈",
     year: "1906",
@@ -12,6 +15,7 @@ export const artworks = [
       "https://commons.wikimedia.org/wiki/File:Claude_Monet_-_Water_Lilies_-_1906,_Ryerson.jpg",
   },
   {
+    id: "van-gogh-bedroom" satisfies ArtworkId,
     title: "卧室",
     artist: "文森特·梵高",
     year: "1889",

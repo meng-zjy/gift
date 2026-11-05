@@ -1,4 +1,5 @@
 import { livingRoom, stories as livingStories } from "./livingRoom";
+import { bedroom } from "./bedroom";
 import type { RoomDefinition, Story } from "../game/types";
 
 export const stories: Record<string, Story> = {
@@ -37,9 +38,18 @@ export const stories: Record<string, Story> = {
   paintings: {
     id: "paintings",
     kind: "gallery",
-    title: "把喜欢的画，挂在家里",
-    speaker: "我们的小画廊",
-    paragraphs: ["莫奈《睡莲》，1906", "梵高《卧室》，1889"],
+    title: "客厅里的一池睡莲",
+    speaker: "客厅墙上的莫奈",
+    artworkId: "monet-water-lilies",
+    paragraphs: ["莫奈《睡莲》，1906"],
+  },
+  "bedroom-painting": {
+    id: "bedroom-painting",
+    kind: "gallery",
+    title: "卧室里，梵高的卧室",
+    speaker: "卧室墙上的梵高",
+    artworkId: "van-gogh-bedroom",
+    paragraphs: ["梵高《卧室》，1889"],
   },
 };
 
@@ -47,23 +57,25 @@ const kitchen: RoomDefinition = {
   id: "kitchen",
   name: "厨房",
   theme: "kitchen",
-  hint: "左侧小门可以回客厅。走近冰箱看看喜好，餐桌上还放着小蛋糕。",
+  hint: "左侧门洞可以回客厅。冰箱四周都能打开口味小本，餐桌上还放着小蛋糕。",
   width: 480,
   height: 320,
   walkable: { x: 28, y: 82, width: 424, height: 208 },
-  spawn: { x: 80, y: 210 },
-  entrances: { "from-living": { x: 80, y: 210 } },
+  spawn: { x: 60, y: 210 },
+  entrances: { "from-living": { x: 60, y: 210 } },
   furniture: [
     {
       id: "living-door",
       kind: "door",
-      x: 30,
-      y: 173,
-      width: 25,
-      height: 49,
+      x: 20,
+      y: 178,
+      width: 18,
+      height: 48,
+      solid: false,
+      doorSide: "left",
       interaction: {
         label: "回客厅",
-        point: { x: 62, y: 209 },
+        range: 36,
         action: {
           type: "travel",
           roomId: "living-room",
@@ -75,16 +87,15 @@ const kitchen: RoomDefinition = {
       id: "fridge",
       kind: "fridge",
       x: 95,
-      y: 91,
+      y: 112,
       width: 51,
       height: 65,
       interaction: {
         label: "打开口味小本",
-        point: { x: 120, y: 161 },
         action: { type: "story", storyId: "favorite-foods" },
       },
     },
-    { id: "counter", kind: "counter", x: 216, y: 96, width: 180, height: 44 },
+    { id: "counter", kind: "counter", x: 216, y: 112, width: 180, height: 44 },
     {
       id: "cake-table",
       kind: "table",
@@ -94,7 +105,6 @@ const kitchen: RoomDefinition = {
       height: 50,
       interaction: {
         label: "看看草莓蛋糕",
-        point: { x: 314, y: 244 },
         action: { type: "story", storyId: "cake-note" },
       },
     },
@@ -112,4 +122,5 @@ const kitchen: RoomDefinition = {
 export const rooms: Record<string, RoomDefinition> = {
   [livingRoom.id]: livingRoom,
   [kitchen.id]: kitchen,
+  [bedroom.id]: bedroom,
 };

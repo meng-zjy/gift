@@ -24,7 +24,10 @@ function canStand(position: Point, room: RoomDefinition): boolean {
     body.y >= floor.y &&
     body.x + body.width <= floor.x + floor.width &&
     body.y + body.height <= floor.y + floor.height;
-  return inside && !room.furniture.some((item) => overlaps(body, item));
+  return (
+    inside &&
+    !room.furniture.some((item) => item.solid !== false && overlaps(body, item))
+  );
 }
 
 /** Substeps prevent tunnelling through furniture after a slow frame. */
