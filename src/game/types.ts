@@ -12,7 +12,7 @@ export interface Bounds extends Point {
 export interface Story {
   id: string;
   title: string;
-  kind: "memory" | "dialogue" | "intro" | "collection";
+  kind: "memory" | "dialogue" | "intro" | "collection" | "dessert" | "gallery";
   speaker: string;
   paragraphs: string[];
 }
@@ -28,7 +28,8 @@ export interface Furniture extends Bounds {
     | "door"
     | "fridge"
     | "counter"
-    | "table";
+    | "table"
+    | "painting";
   interaction?: { label: string; action: InteractionAction; point: Point };
 }
 

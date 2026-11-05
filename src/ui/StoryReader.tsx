@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { Story } from "../game/types";
 import type { ReadingSession } from "./useStoryBook";
+import { artworks } from "../content/artworks";
+import { CakeIllustration, FoodIllustration } from "./ObjectIllustrations";
 
 interface Props {
   story: Story;
@@ -11,6 +13,15 @@ interface Props {
   onClose: (reason: "close" | "skip" | "finish") => void;
 }
 
+const labels = {
+  memory: "窗边的日记",
+  dialogue: "和你说说话",
+  intro: "给你的开场短笺",
+  collection: "冰箱里的偏爱",
+  dessert: "今日份的甜",
+  gallery: "小屋画廊",
+};
+
 export function StoryReader({
   story,
   session,
@@ -20,13 +31,14 @@ export function StoryReader({
   onClose,
 }: Props) {
   const dialog = useRef<HTMLDialogElement>(null);
-  const [paused, setPaused] = useState(false);
-  const isPaused = paused || backgroundPaused;
+  const [pixelView, setPixelView] = useState(false);
   const last = session.step === story.paragraphs.length - 1;
+  const artwork = artworks[session.step % artworks.length];
 
   useEffect(() => {
-    dialog.current?.showModal();
-    return () => dialog.current?.close();
+    const element = dialog.current;
+    element?.showModal();
+    return () => element?.close();
   }, []);
 
   function close(reason: "close" | "skip" | "finish") {
@@ -37,7 +49,7 @@ export function StoryReader({
   return (
     <dialog
       ref={dialog}
-      className="story-dialog"
+      className={`story-dialog reader-${story.kind}`}
       aria-labelledby="story-title"
       onCancel={(event) => {
         event.preventDefault();
@@ -53,13 +65,21 @@ export function StoryReader({
         >
           ×
         </button>
-        <span className="eyebrow">
-          {session.replay ? "A MOMENT, ONCE AGAIN" : "A PAGE FOR US"}
-        </span>
-        <p className="story-speaker">
-          {story.speaker}
-          {session.replay ? " · 回看中" : ""}
-        </p>
+        <div className="reader-heading">
+          <span className="eyebrow">{labels[story.kind]}</span>
+          <span className="replay-badge">{session.replay ? "回看中" : ""}</span>
+        </div>
+        {story.kind === "dialogue" && (
+          <div className="dialogue-portrait" aria-hidden="true">
+            <span>♡</span>
+            <svg viewBox="0 0 16 18">
+              <path fill="#594b44" d="M4 1h8v2h2v6H2V3h2z" />
+              <path fill="#edc6a0" d="M4 4h8v7H4z" />
+              <path fill="#394554" d="M5 6h1v1H5zm5 0h1v1h-1z" />
+              <path fill="#c3aa7d" d="M3 11h10v6H3z" />
+            </svg>
+          </div>
+        )}
         <h2 id="story-title">{story.title}</h2>
         {story.kind === "intro" && (
           <div className="opening-vignette" aria-hidden="true">
@@ -68,64 +88,110 @@ export function StoryReader({
             <span>✧</span>
           </div>
         )}
-        <div className="story-position">
-          <span>
-            第 {session.step + 1} / {story.paragraphs.length} 段
-          </span>
-          <span>{session.replay ? "回看不改变原进度" : "已记住当前段落"}</span>
-        </div>
-        <div className="story-body story-segment" aria-live="polite">
-          {isPaused ? (
-            <div className="reading-paused">
-              <p>这一页先替你留着。</p>
-              <button
-                className="primary-button"
-                onClick={() => {
-                  setPaused(false);
-                  onResume();
+        {story.kind === "gallery" ? (
+          <div className="artwork-viewer">
+            <figure>
+              <img
+                src={pixelView ? artwork.pixel : artwork.original}
+                className={pixelView ? "pixel-artwork" : ""}
+                alt={`${artwork.artist}《${artwork.title}》${pixelView ? "像素版" : "原画"}`}
+                onError={(event) => {
+                  event.currentTarget.alt = "画作暂时未加载，请关闭后重试";
                 }}
+              />
+              <figcaption>
+                <strong>《{artwork.title}》</strong>
+                <span>
+                  {artwork.artist} · {artwork.year}
+                </span>
+              </figcaption>
+            </figure>
+            <div className="artwork-tools">
+              <button
+                className="secondary-button"
+                onClick={() => setPixelView(!pixelView)}
               >
-                继续阅读
+                {pixelView ? "查看原画" : "查看像素版"}
               </button>
+              <a href={artwork.source} target="_blank" rel="noreferrer">
+                图像来源 ↗
+              </a>
             </div>
-          ) : (
-            <p key={session.step}>{story.paragraphs[session.step]}</p>
-          )}
-        </div>
-        <div className="story-tools">
+            <p className="artwork-note">{artwork.note}</p>
+          </div>
+        ) : (
+          <>
+            {story.kind === "collection" && session.step === 0 && (
+              <div className="food-cards">
+                {[
+                  {
+                    kind: "strawberry",
+                    name: "草莓",
+                    note: "红红的，一点点酸甜",
+                  },
+                  { kind: "mango", name: "芒果", note: "把阳光留在冰箱里" },
+                  { kind: "cake", name: "小蛋糕", note: "给普通日子加一点甜" },
+                ].map((item) => (
+                  <article key={item.kind}>
+                    <FoodIllustration
+                      kind={item.kind as "strawberry" | "mango" | "cake"}
+                    />
+                    <h3>{item.name}</h3>
+                    <span>{item.note}</span>
+                  </article>
+                ))}
+              </div>
+            )}
+            {story.kind === "dessert" && (
+              <div className="dessert-plate">
+                <CakeIllustration />
+                <span>STRAWBERRY SHORTCAKE</span>
+              </div>
+            )}
+            <div className="story-body story-segment" aria-live="polite">
+              <p key={session.step}>{story.paragraphs[session.step]}</p>
+            </div>
+          </>
+        )}
+        {backgroundPaused && (
+          <div className="return-banner">
+            <span>这一页替你留着，回来后继续就好。</span>
+            <button className="secondary-button" onClick={onResume}>
+              继续阅读
+            </button>
+          </div>
+        )}
+        <div className="story-footer">
           <button
             className="text-button"
-            disabled={isPaused}
-            onClick={() => setPaused(true)}
+            disabled={backgroundPaused || session.step === 0}
+            onClick={() => onMove(session.step - 1)}
           >
-            暂停阅读
+            ← {story.kind === "gallery" ? "上一幅" : "上一段"}
+          </button>
+          <span className="page-number">
+            {session.step + 1} / {story.paragraphs.length}
+          </span>
+          <button
+            className="primary-button"
+            disabled={backgroundPaused}
+            onClick={() => (last ? close("finish") : onMove(session.step + 1))}
+          >
+            {last
+              ? "读完，回到小屋 →"
+              : story.kind === "gallery"
+                ? "下一幅 →"
+                : "下一段 →"}
+          </button>
+        </div>
+        <div className="story-tools">
+          <button className="text-button" onClick={() => close("close")}>
+            先离开，稍后继续
           </button>
           <button className="text-button" onClick={() => close("skip")}>
             跳过本段剧情
           </button>
-          <button className="text-button" onClick={() => close("close")}>
-            先离开，稍后继续
-          </button>
         </div>
-        <div className="story-footer">
-          <button
-            className="text-button"
-            disabled={isPaused || session.step === 0}
-            onClick={() => onMove(session.step - 1)}
-          >
-            ← 上一段
-          </button>
-          <button
-            className="primary-button"
-            disabled={isPaused}
-            onClick={() => (last ? close("finish") : onMove(session.step + 1))}
-          >
-            {last ? "读完，回到小屋 →" : "下一段 →"}
-          </button>
-        </div>
-        <p className="reader-hint">
-          随时跳过或离开；在「回忆册」中继续或从头回看。
-        </p>
       </div>
     </dialog>
   );

@@ -26,13 +26,20 @@ export const stories: Record<string, Story> = {
   },
   "cake-note": {
     id: "cake-note",
-    kind: "memory",
+    kind: "dessert",
     title: "给生活留一点甜",
     speaker: "餐桌上的小纸条 · 演示内容",
     paragraphs: [
       "这里先放一块草莓小蛋糕。以后我们一起吃过的甜品，都可以在这张桌子上留下一个位置。",
       "可以记下店名、口味和那天的小事。至于最上面的那颗草莓，就留给你。",
     ],
+  },
+  paintings: {
+    id: "paintings",
+    kind: "gallery",
+    title: "把喜欢的画，挂在家里",
+    speaker: "我们的小画廊",
+    paragraphs: ["莫奈《睡莲》，1906", "梵高《卧室》，1889"],
   },
 };
 

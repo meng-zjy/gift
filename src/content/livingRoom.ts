@@ -35,6 +35,19 @@ export const livingRoom: RoomDefinition = {
   spawn: { x: 240, y: 252 },
   entrances: { "from-kitchen": { x: 405, y: 210 } },
   furniture: [
+    {
+      id: "monet-painting",
+      kind: "painting",
+      x: 217,
+      y: 28,
+      width: 58,
+      height: 46,
+      interaction: {
+        label: "看看墙上的画",
+        point: { x: 279, y: 96 },
+        action: { type: "story", storyId: "paintings" },
+      },
+    },
     { id: "sofa", kind: "sofa", x: 54, y: 109, width: 100, height: 49 },
     {
       id: "diary-desk",

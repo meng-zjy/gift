@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { stories } from "../content/world";
 import type { ReadingProgress } from "./useStoryBook";
 
@@ -12,11 +12,15 @@ export function MemoryLibrary({
   progress,
   onOpen,
   onClose,
+  onReset,
 }: {
   progress: ReadingProgress;
   onOpen: (id: string, fromStart: boolean) => void;
   onClose: () => void;
+  onReset: () => boolean;
 }) {
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [resetFailed, setResetFailed] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     dialog.current?.showModal();
@@ -45,7 +49,7 @@ export function MemoryLibrary({
         <span className="eyebrow">THE MOMENTS YOU FOUND</span>
         <h2 id="library-title">回忆册</h2>
         <p className="library-note">
-          只收录你已发现的故事。重看不会移动小人，也不会覆盖原阅读进度。
+          收藏已经遇见的故事，想念的时候再翻开。还没发现的，留在小屋里等你。
         </p>
         {discovered.length === 0 && <p>还没有打开过回忆，先去书桌旁看看吧。</p>}
         <div className="library-list">
@@ -75,6 +79,38 @@ export function MemoryLibrary({
               </div>
             </article>
           ))}
+        </div>
+        <div className="library-reset">
+          <p>每台设备分别记住自己的探索。这本回忆册，只属于当前浏览器。</p>
+          {confirmReset ? (
+            <div>
+              <p>清空这台浏览器的阅读记录，从开场重新体验？故事内容会保留。</p>
+              <button
+                className="secondary-button"
+                onClick={() => setConfirmReset(false)}
+              >
+                取消
+              </button>
+              <button
+                className="primary-button"
+                onClick={() => setResetFailed(!onReset())}
+              >
+                确认重新开始
+              </button>
+              {resetFailed && (
+                <p role="alert">
+                  未能清除阅读记录，请检查浏览器的网站存储设置。
+                </p>
+              )}
+            </div>
+          ) : (
+            <button
+              className="text-button"
+              onClick={() => setConfirmReset(true)}
+            >
+              重新开始体验
+            </button>
+          )}
         </div>
       </div>
     </dialog>

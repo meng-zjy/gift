@@ -19,6 +19,13 @@ class WorldScene extends Phaser.Scene {
     super("world");
   }
 
+  preload(): void {
+    this.load.image(
+      "monet-painting",
+      `${import.meta.env.BASE_URL}art/monet-pixel.png`,
+    );
+  }
+
   create(): void {
     createCharacterTextures(this);
     this.renderRoom();

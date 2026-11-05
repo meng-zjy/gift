@@ -112,5 +112,17 @@ export function useStoryBook() {
     setSession(null);
   }
 
-  return { progress, session, storageFailed, open, move, close };
+  function reset(): boolean {
+    try {
+      localStorage.removeItem(READING_KEY);
+      setProgress({});
+      setSession(null);
+      return true;
+    } catch {
+      setStorageFailed(true);
+      return false;
+    }
+  }
+
+  return { progress, session, storageFailed, open, move, close, reset };
 }

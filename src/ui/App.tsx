@@ -110,17 +110,10 @@ export function App() {
           我们的小小世界
         </a>
         <span className="version-tag">
-          <span /> 小屋与回忆 · MILESTONE 1
+          <span /> 今天也一起，慢慢来
         </span>
       </header>
       <main id="home">
-        <section className="intro">
-          <p className="eyebrow">A LITTLE HOME, A LOT OF US</p>
-          <h1>
-            把喜欢，住成一间<span>小屋。</span>
-          </h1>
-          <p className="intro-note">有甜甜的偏爱，也有想和你慢慢读的故事。</p>
-        </section>
         <section className="game-section" aria-label="小屋探索">
           <div className="room-bar">
             <div className="room-label">
@@ -200,9 +193,6 @@ export function App() {
                 <kbd>Esc</kbd> 离开阅读
               </span>
             </div>
-            <span className="demo-label">
-              演示人物与故事 · 喜好来自你的描述
-            </span>
           </div>
           <div className="touch-controls" aria-label="触屏方向控制">
             <div className="direction-pad">
@@ -244,31 +234,7 @@ export function App() {
             </p>
           )}
         </section>
-        <section className="field-notes" aria-label="小屋指南">
-          <div className="notes-heading">
-            <span className="eyebrow">A HOME THAT GROWS WITH US</span>
-            <h2>两间房，一本回忆册</h2>
-          </div>
-          <article>
-            <span className="note-icon">⌂</span>
-            <div>
-              <h3>客厅右侧的小门</h3>
-              <p>去厨房，打开冰箱里的口味小本。</p>
-            </div>
-          </article>
-          <article>
-            <span className="note-icon">▤</span>
-            <div>
-              <h3>故事随时回来再读</h3>
-              <p>暂停、跳过、回看，按你的节奏来。</p>
-            </div>
-          </article>
-        </section>
       </main>
-      <footer>
-        <span>一间小屋，慢慢装下我们的每一天。</span>
-        <span>BUILT FOR TWO · 2026</span>
-      </footer>
       {book.session && (
         <StoryReader
           key={book.session.storyId}
@@ -285,6 +251,11 @@ export function App() {
           progress={book.progress}
           onOpen={openStory}
           onClose={() => setLibraryOpen(false)}
+          onReset={() => {
+            if (!book.reset()) return false;
+            window.location.reload();
+            return true;
+          }}
         />
       )}
     </div>

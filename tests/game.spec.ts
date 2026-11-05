@@ -30,6 +30,7 @@ test("walk to the diary, freeze movement while reading, close and read again", a
   await expect(
     page.getByRole("heading", { name: "先把这一页，留给我们" }),
   ).toBeVisible();
+  await page.screenshot({ path: "test-results/diary.png", fullPage: true });
   const before = await page.locator("canvas").screenshot();
   await holdKey(page, "ArrowLeft", 500);
   expect(await page.locator("canvas").screenshot()).toEqual(before);
@@ -62,12 +63,25 @@ test("travel to kitchen, read food preferences, return repeatedly without duplic
     page.getByRole("heading", { name: "冰箱里，为你留的甜" }),
   ).toBeVisible();
   await expect(page.getByText(/喜欢的水果：草莓、芒果/)).toBeVisible();
+  await expect(page.locator(".food-cards article")).toHaveCount(3);
+  await page.screenshot({
+    path: "test-results/food-cards.png",
+    fullPage: true,
+  });
   await page.getByRole("button", { name: "下一段" }).click();
   await expect(page.getByText(/不喜欢的食物：还没有记录/)).toBeVisible();
   await page.getByRole("button", { name: "读完，回到小屋" }).click();
   await page.screenshot({ path: "test-results/kitchen.png", fullPage: true });
-  await holdKey(page, "s", 450);
-  await holdKey(page, "a", 450);
+  await holdKey(page, "s", 900);
+  await holdKey(page, "d", 2150);
+  await holdKey(page, "w", 200);
+  await page.keyboard.press("e");
+  await expect(page.locator(".reader-dessert")).toBeVisible();
+  await page.screenshot({ path: "test-results/dessert.png", fullPage: true });
+  await page.getByRole("button", { name: "关闭回忆", exact: true }).click();
+  await holdKey(page, "s", 200);
+  await holdKey(page, "a", 2600);
+  await holdKey(page, "w", 580);
   for (let trip = 0; trip < 3; trip++) {
     await page.keyboard.press("e");
     await expect(page.getByTestId("room-name")).toHaveText("客厅");
@@ -95,10 +109,10 @@ test("opening can be skipped, resumed after reload, paused and replayed without 
     page.getByRole("heading", { name: "先把这一页，留给我们" }),
   ).not.toBeVisible();
   await page.getByRole("button", { name: "继续阅读" }).click();
-  await expect(page.getByText("第 2 / 3 段")).toBeVisible();
-  await page.getByRole("button", { name: "暂停阅读" }).click();
-  await expect(page.getByRole("button", { name: "下一段" })).toBeDisabled();
-  await page.getByRole("button", { name: "继续阅读" }).click();
+  await expect(page.getByText("2 / 3")).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "暂停阅读" }),
+  ).not.toBeVisible();
   await page.evaluate(() => window.dispatchEvent(new Event("blur")));
   await expect(page.getByRole("button", { name: "下一段" })).toBeDisabled();
   await page.getByRole("button", { name: "继续阅读" }).click();
@@ -108,11 +122,112 @@ test("opening can be skipped, resumed after reload, paused and replayed without 
   await page.getByRole("button", { name: /回忆册/ }).click();
   await expect(page.getByText("已读完 · 停在第 3 段")).toBeVisible();
   await page.getByRole("button", { name: "从头回看" }).click();
-  await expect(page.getByText("第 1 / 3 段")).toBeVisible();
+  await expect(page.getByText("1 / 3")).toBeVisible();
   await page.getByRole("button", { name: "跳过本段剧情" }).click();
   expect(await page.locator("canvas").screenshot()).toEqual(before);
   await page.getByRole("button", { name: /回忆册/ }).click();
   await expect(page.getByText("已读完 · 停在第 3 段")).toBeVisible();
+});
+
+test("the painting opens actual local artworks with original and pixel views", async ({
+  page,
+}) => {
+  await openGame(page);
+  await holdKey(page, "d", 430);
+  await holdKey(page, "w", 1900);
+  await page.keyboard.press("e");
+  await expect(
+    page.getByRole("heading", { name: "把喜欢的画，挂在家里" }),
+  ).toBeVisible();
+  const painting = page.getByRole("img", { name: "克劳德·莫奈《睡莲》原画" });
+  await expect(painting).toBeVisible();
+  await expect
+    .poll(() =>
+      painting.evaluate((image) => (image as HTMLImageElement).naturalWidth),
+    )
+    .toBeGreaterThan(500);
+  await page.getByRole("button", { name: "查看像素版" }).click();
+  await expect(
+    page.getByRole("img", { name: "克劳德·莫奈《睡莲》像素版" }),
+  ).toHaveAttribute("src", /monet-pixel.png/);
+  await page.getByRole("button", { name: "下一幅" }).click();
+  await expect(page.getByRole("img", { name: /梵高《卧室》/ })).toBeVisible();
+  await page.screenshot({ path: "test-results/gallery.png", fullPage: true });
+});
+
+test("a new visitor has independent progress and restarting requires confirmation", async ({
+  page,
+  browser,
+}) => {
+  await openGame(page);
+  await holdKey(page, "d", 1400);
+  await holdKey(page, "w", 1600);
+  await page.keyboard.press("e");
+  await page.getByRole("button", { name: "关闭回忆", exact: true }).click();
+  const fresh = await browser.newContext();
+  const visitor = await fresh.newPage();
+  await visitor.goto(new URL(page.url()).origin);
+  await expect(
+    visitor.getByRole("heading", { name: "欢迎来到，我们的小小世界" }),
+  ).toBeVisible();
+  expect(
+    await visitor.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem("our-little-world:reading:v1")!)
+          .entries["first-page"],
+    ),
+  ).toBeUndefined();
+  await fresh.close();
+  await page.bringToFront();
+  const resume = page.getByRole("button", { name: "继续探索" });
+  if (await resume.isVisible()) await resume.click();
+  await page.getByRole("button", { name: /回忆册/ }).click();
+  await page.getByRole("button", { name: "重新开始体验", exact: true }).click();
+  await page.getByRole("button", { name: "取消", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "先把这一页，留给我们" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "重新开始体验", exact: true }).click();
+  await page.getByRole("button", { name: "确认重新开始", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "欢迎来到，我们的小小世界" }),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem("our-little-world:reading:v1")!)
+          .entries["first-page"],
+    ),
+  ).toBeUndefined();
+});
+
+test("the entire game fits without browser zoom at desktop and phone sizes", async ({
+  page,
+}) => {
+  await openGame(page);
+  for (const size of [
+    { width: 1366, height: 768 },
+    { width: 1280, height: 720 },
+    { width: 390, height: 844 },
+    { width: 360, height: 640 },
+  ]) {
+    await page.setViewportSize(size);
+    await expect
+      .poll(() =>
+        page.evaluate(() => ({
+          width: document.documentElement.scrollWidth,
+          height: document.documentElement.scrollHeight,
+        })),
+      )
+      .toEqual(size);
+    const interaction = await page.locator(".interaction-bar").boundingBox();
+    expect(interaction!.y + interaction!.height).toBeLessThanOrEqual(
+      size.height,
+    );
+  }
+  await expect(
+    page.getByRole("region", { name: "小屋指南" }),
+  ).not.toBeVisible();
 });
 
 test("the fixed companion can be approached and spoken to", async ({
@@ -123,6 +238,8 @@ test("the fixed companion can be approached and spoken to", async ({
   await holdKey(page, "w", 400);
   await page.keyboard.press("e");
   await expect(page.getByRole("heading", { name: "你来啦。" })).toBeVisible();
+  await expect(page.locator(".reader-dialogue")).toBeVisible();
+  await page.screenshot({ path: "test-results/dialogue.png", fullPage: true });
   await page.getByRole("button", { name: "关闭回忆" }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
 });
@@ -139,7 +256,7 @@ test("keyboard buttons work while the game is paused and the room fits a laptop 
   await replay.focus();
   await page.waitForTimeout(100);
   await page.keyboard.press("Space");
-  await expect(page.getByText("第 1 / 3 段")).toBeVisible();
+  await expect(page.getByText("1 / 3")).toBeVisible();
   await page.screenshot({ path: "test-results/opening.png", fullPage: true });
 });
 

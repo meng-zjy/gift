@@ -45,33 +45,7 @@ export function drawRoom(scene: Phaser.Scene, room: RoomDefinition): void {
         }
       }
     }
-  for (let x = 33; x < 452; x += 14) rect(x, 28, 1, 51, 0xc8cfc3);
-  rect(26, 77, 428, 7, colors.wood);
-  rect(26, 77, 428, 2, colors.woodLight);
-  // Two windows frame the room without requiring perspective geometry.
-  for (const x of [73, 332]) {
-    rect(x - 5, 31, 69, 43, colors.wood);
-    rect(x, 35, 59, 33, 0x92b7c3);
-    rect(x + 3, 38, 24, 12, 0xb6d3d0);
-    rect(x + 33, 38, 22, 12, 0xd0dcd2);
-    rect(x + 28, 35, 3, 33, 0xf1e7ca);
-    rect(x, 51, 59, 3, 0xf1e7ca);
-    rect(x - 6, 68, 71, 5, colors.woodLight);
-    rect(x - 8, 31, 9, 32, 0x9fa8c2);
-    rect(x + 59, 31, 9, 32, 0x9fa8c2);
-  }
-  // A small night-sky painting, using the blue/gold motif of her favorite art.
-  rect(212, 33, 51, 35, colors.wood);
-  rect(216, 37, 43, 27, 0x516b8b);
-  rect(220, 53, 35, 6, 0x8393ae);
-  for (const [x, y] of [
-    [223, 43],
-    [245, 45],
-    [235, 53],
-    [251, 39],
-  ]) {
-    rect(x, y, 3, 3, 0xf1d68b);
-  }
+  drawWalls(scene, room, rect);
   // The rug is decorative, so movement stays on a simple flat plane.
   if (room.theme === "living") {
     rect(176, 167, 129, 94, 0xa3879e);
@@ -89,8 +63,119 @@ export function drawRoom(scene: Phaser.Scene, room: RoomDefinition): void {
   for (const furniture of room.furniture) drawFurniture(scene, furniture);
 }
 
+type PaintRect = (
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  color: number,
+) => void;
+
+function drawWalls(
+  scene: Phaser.Scene,
+  room: RoomDefinition,
+  rect: PaintRect,
+): void {
+  if (room.theme === "living") {
+    for (let x = 33; x < 452; x += 12) {
+      rect(x, 28, 1, 49, 0xc6d0c1);
+      rect(x + 3, 29, 1, 47, 0xe4e6d6);
+    }
+    for (const x of [65, 337]) {
+      rect(x - 4, 29, 77, 47, 0x695a52);
+      rect(x, 32, 69, 39, 0xced5bc);
+      rect(x + 3, 35, 63, 32, 0xa1bdba);
+      // Garden silhouettes and sunlight, framed by pleated fabric curtains.
+      rect(x + 4, 51, 61, 16, 0x849e8b);
+      for (let leaf = 0; leaf < 13; leaf++) {
+        rect(
+          x + 5 + leaf * 4,
+          45 + (leaf % 4) * 3,
+          5,
+          7,
+          leaf % 2 ? 0xa7b49b : 0x748f7d,
+        );
+      }
+      rect(x + 32, 34, 3, 35, 0xf0e7cc);
+      rect(x + 3, 49, 63, 3, 0xf0e7cc);
+      rect(x - 6, 27, 81, 2, 0x8e7a63);
+      for (let fold = 0; fold < 4; fold++) {
+        rect(
+          x - 5 + fold * 2,
+          30,
+          2,
+          31 - fold * 3,
+          fold % 2 ? 0xa29fb5 : 0xbcb6c9,
+        );
+        rect(
+          x + 66 + fold * 2,
+          30,
+          2,
+          22 + fold * 3,
+          fold % 2 ? 0xa29fb5 : 0xbcb6c9,
+        );
+      }
+      rect(x - 6, 69, 81, 4, 0xc3a784);
+      rect(x - 3, 73, 75, 2, 0x8f7966);
+    }
+    rect(26, 77, 428, 7, 0x927d66);
+    rect(26, 77, 428, 2, 0xd4bb95);
+  } else {
+    rect(26, 26, 428, 56, 0xeee5cc);
+    for (let y = 28; y < 77; y += 12) {
+      rect(27, y, 426, 1, 0xd0cbb6);
+      for (let x = 28 + (y % 24 ? 10 : 0); x < 452; x += 24)
+        rect(x, y, 1, 12, 0xd0cbb6);
+    }
+    // One broad kitchen window; this room has its own architecture.
+    rect(281, 29, 110, 45, 0x9e927b);
+    rect(285, 32, 102, 38, 0xa4c2c0);
+    rect(287, 52, 98, 16, 0x94ad8e);
+    rect(334, 32, 3, 38, 0xfff5dd);
+    rect(285, 49, 102, 3, 0xfff5dd);
+    rect(279, 69, 114, 5, 0xd8c5a1);
+    for (let x = 282; x < 389; x += 9) rect(x, 30, 6, 7, 0xc5ab85);
+    // Clock, hanging utensils and open shelves replace the living-room art wall.
+    rect(70, 35, 24, 25, 0xb4916b);
+    rect(73, 38, 18, 18, 0xf9efd4);
+    rect(81, 40, 1, 9, 0x706b62);
+    rect(81, 48, 5, 1, 0x706b62);
+    rect(131, 36, 106, 4, 0x937e69);
+    for (const x of [144, 166, 188]) {
+      rect(x, 40, 2, 12, 0x8c9490);
+      rect(x - 3, 51, 8, 9, x === 166 ? 0x758a86 : 0xb8bbaa);
+      rect(x - 1, 53, 4, 5, 0x969f94);
+    }
+    rect(205, 45, 7, 17, 0xbba083);
+    rect(216, 43, 10, 19, 0xc7b08d);
+    rect(26, 77, 428, 7, 0x8caa98);
+    rect(26, 77, 428, 2, 0xc3d0b6);
+  }
+}
+
 function drawFurniture(scene: Phaser.Scene, item: Furniture): void {
   if (item.kind === "npc") return;
+  if (item.kind === "painting") {
+    const frame = scene.add.graphics().setDepth(1);
+    frame.fillStyle(0x6c5544).fillRect(item.x, item.y, item.width, item.height);
+    frame
+      .fillStyle(0xd0af78)
+      .fillRect(item.x + 2, item.y + 2, item.width - 4, item.height - 4);
+    frame
+      .fillStyle(0xe7d9b7)
+      .fillRect(item.x + 4, item.y + 4, item.width - 8, item.height - 8);
+    if (scene.textures.exists("monet-painting")) {
+      scene.add
+        .image(
+          item.x + item.width / 2,
+          item.y + item.height / 2,
+          "monet-painting",
+        )
+        .setDisplaySize(38, 36)
+        .setDepth(1);
+    }
+    return;
+  }
   const brush = scene.add.graphics().setDepth(1);
   const rect = (
     dx: number,
@@ -178,6 +263,71 @@ function drawFurniture(scene: Phaser.Scene, item: Furniture): void {
     rect(2, 7, 11, 6, colors.leaf);
     rect(13, 3, 12, 7, 0x8ba886);
     rect(5, 0, 7, 8, 0xa8ba8e);
+  }
+  if (item.kind === "sofa") {
+    for (let stitch = 13; stitch < 87; stitch += 4)
+      rect(stitch, 40, 1, 1, 0xd0d7b8);
+    rect(12, 24, 34, 1, 0xc1ceb1);
+    rect(52, 24, 34, 1, 0xc1ceb1);
+    rect(18, 18, 14, 1, 0xe7d4b3);
+    rect(65, 19, 14, 1, 0xd7bed0);
+    rect(12, 46, 5, 3, 0x6b6458);
+    rect(83, 46, 5, 3, 0x6b6458);
+  } else if (item.kind === "desk") {
+    for (let grain = 5; grain < 84; grain += 13) rect(grain, 5, 9, 1, 0xd6b58e);
+    rect(55, 22, 2, 3, 0xab7b5d);
+    rect(54, 20, 4, 3, 0xd6b176);
+    rect(58, 13, 2, 9, 0x758e75);
+    rect(56, 12, 3, 4, 0xaab28e);
+  } else if (item.kind === "shelf") {
+    for (let book = 7; book < 48; book += 9) rect(book + 1, 8, 4, 1, 0xe6dfb9);
+  } else if (item.kind === "fridge") {
+    rect(42, 5, 2, 52, 0xd7dfcb);
+    rect(29, 34, 3, 2, 0x88a078);
+    for (const [x, y] of [
+      [29, 38],
+      [31, 40],
+      [33, 37],
+    ])
+      rect(x, y, 1, 1, 0xf6d5a1);
+    rect(26, 48, 9, 1, 0xb9a88a);
+  } else if (item.kind === "counter") {
+    // Tiny recognisable utensils give the kitchen a lived-in scale.
+    rect(32, 1, 3, 10, 0x768c8d);
+    rect(32, 0, 13, 3, 0x8b9e99);
+    rect(42, 2, 3, 6, 0x8b9e99);
+    rect(24, 14, 27, 1, 0xd9ded0);
+    rect(18, 17, 4, 1, 0x859b95);
+    brush.fillStyle(0x394d55).fillCircle(item.x + 87, item.y + 14, 6);
+    brush.fillStyle(0x91a7a0).fillCircle(item.x + 87, item.y + 13, 4);
+    rect(86, 7, 2, 2, 0xd3dfc8);
+    brush.fillStyle(0xb0bcb0).fillEllipse(item.x + 107, item.y + 12, 14, 9);
+    rect(114, 11, 9, 2, 0x746957);
+    rect(103, 10, 6, 3, 0xd8bf7d);
+    rect(132, 9, 38, 16, 0xbba685);
+    rect(134, 10, 34, 13, 0xd6bb91);
+    brush.fillStyle(0xf1cb77).fillEllipse(item.x + 143, item.y + 16, 12, 8);
+    brush.fillStyle(0xcf8587).fillCircle(item.x + 158, item.y + 15, 4);
+    rect(157, 10, 3, 3, 0x729478);
+    for (let drawer = 5; drawer < item.width - 5; drawer += 43) {
+      rect(drawer + 2, 33, 1, 6, 0xa18c75);
+      rect(drawer + 3, 39, 31, 1, 0xcfbda0);
+    }
+  } else if (item.kind === "table") {
+    rect(22, 31, 42, 2, 0xeadbbd);
+    rect(26, 12, 31, 2, 0xfff0dc);
+    rect(29, 15, 2, 5, 0xfff0dc);
+    rect(35, 15, 2, 4, 0xfff0dc);
+    rect(43, 15, 2, 5, 0xfff0dc);
+    rect(51, 15, 2, 4, 0xfff0dc);
+    rect(39, 9, 1, 1, 0xffdeb1);
+    rect(42, 11, 1, 1, 0xffdeb1);
+    rect(63, 18, 1, 12, 0x828e8b);
+    rect(61, 18, 5, 1, 0x828e8b);
+  } else if (item.kind === "plant") {
+    rect(7, 22, 11, 1, 0xd3a58c);
+    rect(6, 8, 4, 1, 0xb5c49a);
+    rect(16, 5, 5, 1, 0xc3cfac);
   }
 }
 
