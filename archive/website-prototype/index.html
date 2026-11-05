@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="theme-color" content="#243844" />
+<title>给你的这一页</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet" /><link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="paint-stroke paint-stroke--one"></div><div class="paint-stroke paint-stroke--two"></div>
+<header class="topbar"><a class="brand" href="#top"><span class="brand-mark">✦</span> 给你的这一页</a><nav class="nav-links"><a href="#memories">我们的回忆</a><a href="#words">她说过</a><a href="#letter">写给你</a></nav><button class="button button--small" id="open-editor">＋ 添加一段回忆</button></header>
+<main id="top">
+<section class="hero section-shell"><div class="hero-copy"><p class="eyebrow">A LITTLE ARCHIVE OF US · 2026</p><h1>把我们一起<br /><em>走过的光</em>，放在这里。</h1><p class="hero-intro">这是送给你的生日礼物。里面有你，也有被你照亮的我。以后每一次想起，都可以从这里重新开始。</p><div class="hero-actions"><a class="button" href="#memories">打开回忆册 <span>↘</span></a><span class="tiny-note">给最喜欢的人 · 生日快乐</span></div></div><div class="hero-art"><div class="sun-disc"></div><div class="photo-card photo-card--back"><span>somewhere<br />with you</span></div><div class="photo-card photo-card--front"><div class="photo-placeholder">放一张<br />你们的照片</div><span class="photo-caption">夏天的风，和你</span></div><div class="fruit-sticker">🍓</div><div class="cake-sticker">🍰</div></div></section>
+<section class="birthday-strip section-shell"><div><span class="eyebrow">NEXT SPECIAL DAY</span><strong id="birthday-countdown">距离她的生日，还有 128 天</strong></div><div class="birthday-date"><span>08</span><small>月<br />17 日</small></div><p>愿新的一岁，也有很多甜甜的、闪闪发光的日子。</p></section>
+<section class="memories section-shell" id="memories"><div class="section-heading"><div><span class="eyebrow">THE MEMORY LINE</span><h2>我们一起<br /><em>记得的事</em></h2></div><p>照片会褪色，故事不会。<br />我把那些小小的瞬间，按照时间放好。</p></div><div class="timeline" id="timeline"></div></section>
+<section class="quotes section-shell" id="words"><div class="section-heading section-heading--compact"><div><span class="eyebrow">THINGS YOU SAID</span><h2>你说过的话，<em>我记住了。</em></h2></div></div><div class="quote-grid" id="quote-grid"></div></section>
+<section class="letter section-shell" id="letter"><div class="letter-paper"><span class="eyebrow">A LETTER FOR YOU</span><h2>给正在读到这里的你：</h2><p>我不太会把喜欢说得特别漂亮，所以想把它们一件一件放在这里。你喜欢的草莓、小蛋糕、那些明亮的颜色，还有我们一起度过的每个普通下午，我都想好好记住。</p><p>生日快乐。谢谢你也喜欢着我。往后的页面，我们一起写。</p><div class="signature">永远站在你这边的<br /><strong>我</strong> <span>♡</span></div></div></section>
+</main><footer class="footer section-shell"><span>made with strawberries &amp; a lot of love</span><span>© 2026 · for us</span></footer>
+<div class="editor-overlay" id="editor-overlay" aria-hidden="true"><aside class="editor-panel"><button class="close-editor" id="close-editor" aria-label="关闭">×</button><span class="eyebrow">PRIVATE EDITOR</span><h2>再放一颗<br /><em>小星星</em></h2><p class="editor-hint">先保存在这台设备里。以后接上服务器，就可以变成真正的私人管理后台。</p><form id="memory-form"><label>日期<input name="date" type="date" required /></label><label>标题<input name="title" placeholder="比如：一起看了海" required /></label><label>那一天发生了什么<textarea name="story" rows="4" placeholder="写下你想记住的细节…" required></textarea></label><label>照片颜色<select name="tone"><option value="blue">雾蓝</option><option value="yellow">奶油黄</option><option value="pink">草莓粉</option><option value="purple">睡莲紫</option></select></label><button class="button" type="submit">保存这段回忆 <span>↗</span></button></form></aside></div>
+<script src="app.js"></script></body></html>
