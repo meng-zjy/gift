@@ -1,4 +1,5 @@
 import type { Bounds, Point, RoomDefinition } from "./types";
+import { roomObstacles } from "./stairs";
 
 export const PLAYER_HALF_SIZE = 6;
 
@@ -25,8 +26,7 @@ function canStand(position: Point, room: RoomDefinition): boolean {
     body.x + body.width <= floor.x + floor.width &&
     body.y + body.height <= floor.y + floor.height;
   return (
-    inside &&
-    !room.furniture.some((item) => item.solid !== false && overlaps(body, item))
+    inside && !roomObstacles(room).some((obstacle) => overlaps(body, obstacle))
   );
 }
 

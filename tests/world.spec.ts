@@ -52,3 +52,15 @@ test("reading saves recover safely from corrupt, obsolete and out of range value
     "first-page": { step: 0, status: "opened" },
   });
 });
+
+test("stair destinations, landings and arrival positions reject invalid expansion configs", () => {
+  const missing = structuredClone(rooms);
+  missing["living-room"].stairs![0].destination.spawnId = "missing";
+  expect(() => validateWorld(missing, stories)).toThrow("目标入口不存在");
+  const landing = structuredClone(rooms);
+  landing["living-room"].stairs![0].landing.x = 900;
+  expect(() => validateWorld(landing, stories)).toThrow("平台配置无效");
+  const arrival = structuredClone(rooms);
+  arrival["living-room"].entrances["from-upstairs"] = { x: 367, y: 124 };
+  expect(() => validateWorld(arrival, stories)).toThrow("入口位于楼梯触发区");
+});

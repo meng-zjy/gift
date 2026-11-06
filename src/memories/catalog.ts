@@ -1,8 +1,17 @@
 import { stories as examples } from "../content/world";
-import type { Story } from "../game/types";
-import { voiceNames, type MemoryArchive, type MemoryKind } from "./model";
+import type { CollectionKind, Story } from "../game/types";
+import { voiceNames, type MemoryArchive } from "./model";
+import type { MilestoneKey } from "../achievements/definitions";
 
-export const exampleCollections: Record<MemoryKind, string[]> = {
+export interface PublishedMilestone {
+  storyId: string;
+  key: MilestoneKey;
+  date: string;
+  title: string;
+  relatedStoryId?: string;
+}
+
+export const exampleCollections: Record<CollectionKind, string[]> = {
   diary: ["first-page"],
   words: ["welcome-home"],
   album: [],
@@ -18,11 +27,12 @@ export function buildCatalog(
   urls: Record<string, string>,
 ) {
   const stories: Record<string, Story> = { ...examples };
-  const collections: Record<MemoryKind, string[]> = {
+  const collections: Record<CollectionKind, string[]> = {
     diary: [],
     words: [],
     album: [],
   };
+  const milestones: PublishedMilestone[] = [];
   for (const entry of [...archive.entries].sort(
     (first, second) =>
       second.date.localeCompare(first.date) ||
@@ -38,7 +48,9 @@ export function buildCatalog(
           ? "memory"
           : entry.kind === "words"
             ? "dialogue"
-            : "album",
+            : entry.kind === "album"
+              ? "album"
+              : "milestone",
       speaker: `${entry.date} · ${voiceNames[entry.voice]}${entry.place ? ` · ${entry.place}` : ""}`,
       paragraphs:
         entry.kind === "album"
@@ -55,9 +67,25 @@ export function buildCatalog(
           : undefined,
       note: entry.kind === "album" ? entry.body : undefined,
     };
-    collections[entry.kind].push(id);
+    if (entry.kind === "milestone") {
+      const related = archive.entries.find(
+        (item) =>
+          item.id === entry.relatedId &&
+          item.kind !== "milestone" &&
+          item.status === "published",
+      );
+      milestones.push({
+        storyId: id,
+        key: entry.milestoneKey ?? "custom",
+        title: entry.title,
+        date: entry.date,
+        relatedStoryId: related
+          ? memoryStoryId(related.id, related.revision)
+          : undefined,
+      });
+    } else collections[entry.kind].push(id);
   }
-  for (const kind of Object.keys(collections) as MemoryKind[])
+  for (const kind of Object.keys(collections) as CollectionKind[])
     collections[kind].push(...exampleCollections[kind]);
-  return { stories, collections };
+  return { stories, collections, milestones };
 }

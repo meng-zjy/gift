@@ -32,7 +32,7 @@ export async function exportBackup(archive: MemoryArchive): Promise<Blob> {
     [
       JSON.stringify({
         format: "our-little-world-memories",
-        version: 1,
+        version: 2,
         exportedAt: new Date().toISOString(),
         entries: checked.entries,
         assets,
@@ -54,7 +54,7 @@ export async function importBackup(file: File): Promise<MemoryArchive> {
   if (
     !source ||
     source.format !== "our-little-world-memories" ||
-    source.version !== 1 ||
+    ![1, 2].includes(source.version) ||
     !Array.isArray(source.entries) ||
     !Array.isArray(source.assets)
   )

@@ -380,6 +380,7 @@ export function MemoryManager({
               entry={selected.entry}
               kind={selected.kind}
               storedAssets={library.archive.assets}
+              entries={library.archive.entries}
               busy={busy}
               onSave={save}
               onDirty={changed}
@@ -396,9 +397,10 @@ export function MemoryManager({
                 或从上方新建一篇日记、一句话、一组照片。
               </p>
               <div className="placement-guide">
-                <span>日记 → 客厅书桌</span>
+                <span>日记 → 二楼卧室书桌</span>
                 <span>说过的话 → 屋里的小人</span>
-                <span>出游相册 → 客厅书架</span>
+                <span>出游相册 → 二楼照片展板</span>
+                <span>生活里程碑 → 负一楼成就长廊</span>
               </div>
             </section>
           )}

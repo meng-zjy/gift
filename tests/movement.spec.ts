@@ -3,6 +3,7 @@ import { livingRoom } from "../src/content/livingRoom";
 import { movePlayer } from "../src/game/movement";
 import { rooms } from "../src/content/world";
 import { findNearby } from "../src/game/interaction";
+import { arrivingStair, stairAt } from "../src/game/stairs";
 
 test("walls stop a player even across a long movement interval", () => {
   const next = movePlayer({ x: 240, y: 280 }, { x: 100, y: 0 }, 10, livingRoom);
@@ -11,20 +12,25 @@ test("walls stop a player even across a long movement interval", () => {
 });
 
 test("the diary desk cannot be walked through", () => {
-  const next = movePlayer({ x: 366, y: 220 }, { x: 0, y: -90 }, 2, livingRoom);
-  expect(next.y).toBeGreaterThanOrEqual(157);
-  expect(next.y).toBeLessThan(163);
+  const next = movePlayer(
+    { x: 235, y: 220 },
+    { x: 0, y: -90 },
+    2,
+    rooms.bedroom,
+  );
+  expect(next.y).toBeGreaterThanOrEqual(162);
+  expect(next.y).toBeLessThan(168);
 });
 
 test("moving along a furniture edge remains possible", () => {
   const next = movePlayer(
-    { x: 366, y: 160 },
+    { x: 235, y: 165 },
     { x: -90, y: -90 },
     0.3,
-    livingRoom,
+    rooms.bedroom,
   );
-  expect(next.x).toBeLessThan(366);
-  expect(next.y).toBeGreaterThanOrEqual(157);
+  expect(next.x).toBeLessThan(235);
+  expect(next.y).toBeGreaterThanOrEqual(162);
 });
 
 test("the upper passage crosses the entire living room and kitchen without invisible blocks", () => {
@@ -38,7 +44,7 @@ test("the upper passage crosses the entire living room and kitchen without invis
 
 test("each side of the fridge, diary and cake offers an interaction without requiring a facing", () => {
   for (const [room, id] of [
-    [livingRoom, "diary-desk"],
+    [rooms.bedroom, "diary-desk"],
     [rooms.kitchen, "fridge"],
     [rooms.kitchen, "cake-table"],
   ] as const) {
@@ -51,6 +57,34 @@ test("each side of the fridge, diary and cake offers an interaction without requ
     ])
       expect(findNearby(position, room)?.id).toBe(id);
   }
+});
+
+test("stair rails block sideways entry and only the end platform triggers a floor change", () => {
+  const stair = livingRoom.stairs![0];
+  const blocked = movePlayer(
+    { x: 310, y: 170 },
+    { x: 90, y: 0 },
+    2,
+    livingRoom,
+  );
+  expect(blocked.x).toBeLessThanOrEqual(326);
+  expect(stairAt({ x: 367, y: 190 }, livingRoom)?.id).toBe(stair.id);
+  expect(
+    arrivingStair({ x: 367, y: 215 }, { x: 367, y: 190 }, livingRoom),
+  ).toBeUndefined();
+  expect(
+    arrivingStair({ x: 367, y: 132 }, { x: 367, y: 124 }, livingRoom)?.id,
+  ).toBe(stair.id);
+  expect(
+    arrivingStair({ x: 367, y: 124 }, { x: 367, y: 124 }, livingRoom),
+  ).toBeUndefined();
+  const turnedBack = movePlayer(
+    { x: 367, y: 190 },
+    { x: 0, y: 90 },
+    0.5,
+    livingRoom,
+  );
+  expect(turnedBack.y).toBeGreaterThan(210);
 });
 
 test("another solid object blocks interaction and faraway objects have no prompt", () => {

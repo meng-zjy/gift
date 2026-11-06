@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import { rooms, stories } from "../content/world";
 import { createCharacterTextures, drawRoom } from "./art";
 import { movePlayer } from "./movement";
+import { arrivingStair, stairAt } from "./stairs";
 import { findNearby } from "./interaction";
 import { artworks } from "../content/artworks";
 import { validateWorld } from "./validateWorld";
@@ -16,6 +17,7 @@ class WorldScene extends Phaser.Scene {
   private facing: Direction = "down";
   private nearest: Furniture | null = null;
   private nearbyLabel: string | null = null;
+  private transitioning = false;
 
   constructor(private bridge: GameBridge) {
     super("world");
@@ -36,6 +38,7 @@ class WorldScene extends Phaser.Scene {
       if (
         !event.repeat &&
         !this.bridge.paused &&
+        !this.transitioning &&
         (event.code === "KeyE" || event.code === "Space")
       ) {
         this.bridge.interactRequested = true;
@@ -80,6 +83,7 @@ class WorldScene extends Phaser.Scene {
       .image(this.position.x, this.position.y - 8, "player-down-0")
       .setScale(2)
       .setDepth(2);
+    this.syncDebugPosition();
     this.marker = this.add
       .text(0, 0, "◇", {
         fontSize: "18px",
@@ -103,7 +107,10 @@ class WorldScene extends Phaser.Scene {
     const requested = this.bridge.interactRequested;
     this.bridge.interactRequested = false;
     const paused =
-      this.bridge.paused || document.hidden || !document.hasFocus();
+      this.bridge.paused ||
+      this.transitioning ||
+      document.hidden ||
+      !document.hasFocus();
     // Let native dialogs own Space, arrows and keyboard navigation while reading.
     this.input.keyboard!.manager.preventDefault = !paused;
     if (paused) {
@@ -114,11 +121,12 @@ class WorldScene extends Phaser.Scene {
     const previous = this.position;
     if (direction) {
       this.facing = direction;
+      const speed = stairAt(this.position, this.room) ? 62 : 90;
       this.position = movePlayer(
         this.position,
         {
-          x: direction === "left" ? -90 : direction === "right" ? 90 : 0,
-          y: direction === "up" ? -90 : direction === "down" ? 90 : 0,
+          x: direction === "left" ? -speed : direction === "right" ? speed : 0,
+          y: direction === "up" ? -speed : direction === "down" ? speed : 0,
         },
         Math.min(delta, 50) / 1000,
         this.room,
@@ -132,6 +140,16 @@ class WorldScene extends Phaser.Scene {
       Math.round(this.position.x),
       Math.round(this.position.y) - 8,
     );
+    if (moved) this.syncDebugPosition();
+    const stair = arrivingStair(previous, this.position, this.room);
+    if (stair) {
+      this.travel(
+        stair.destination.roomId,
+        stair.destination.spawnId,
+        stair.label,
+      );
+      return;
+    }
     this.updateNearby();
     const action = this.nearest?.interaction?.action;
     if (!requested || !action) return;
@@ -143,12 +161,62 @@ class WorldScene extends Phaser.Scene {
       this.bridge.onCollection(action.collection);
       return;
     }
-    this.room = rooms[action.roomId];
-    this.position = { ...this.room.entrances[action.spawnId] };
-    this.facing = "down";
+    if (action.type === "achievements") {
+      this.bridge.onAchievements();
+      return;
+    }
+    this.travel(action.roomId, action.spawnId);
+  }
+
+  private syncDebugPosition(): void {
+    // Browser tests inspect actual movement, without capturing React dialogs over the canvas.
+    // Vite removes this development-only metadata from the production build.
+    if (import.meta.env.DEV)
+      this.game.canvas.dataset.playerPosition = `${Math.round(this.position.x)},${Math.round(this.position.y)}`;
+  }
+
+  private travel(roomId: string, spawnId: string, label?: string): void {
+    const arrive = () => {
+      this.room = rooms[roomId];
+      this.position = { ...this.room.entrances[spawnId] };
+      this.facing = "down";
+      this.bridge.direction = null;
+      this.bridge.interactRequested = false;
+      this.input.keyboard?.resetKeys();
+      this.renderRoom();
+    };
+    if (!label) {
+      arrive();
+      return;
+    }
+    this.transitioning = true;
     this.bridge.direction = null;
+    this.bridge.onTransition(`${label} · ${rooms[roomId].name}`);
     this.input.keyboard?.resetKeys();
-    this.renderRoom();
+    // Reduced-motion users keep the actual staircase walk, with an immediate room change.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      arrive();
+      this.transitioning = false;
+      this.bridge.onTransition(null);
+      return;
+    }
+    this.cameras.main.once(
+      Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
+      () => {
+        arrive();
+        this.cameras.main.once(
+          Phaser.Cameras.Scene2D.Events.FADE_IN_COMPLETE,
+          () => {
+            this.input.keyboard?.resetKeys();
+            this.bridge.direction = null;
+            this.transitioning = false;
+            this.bridge.onTransition(null);
+          },
+        );
+        this.cameras.main.fadeIn(220, 26, 41, 47);
+      },
+    );
+    this.cameras.main.fadeOut(220, 26, 41, 47);
   }
 
   private getDirection(): Direction | null {

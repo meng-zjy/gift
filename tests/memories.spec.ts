@@ -1,3 +1,9 @@
+import {
+  goBedroom,
+  approachDiary,
+  approachPhotoBoard,
+  holdDirection as hold,
+} from "./helpers";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -13,11 +19,6 @@ async function manager(page: Page) {
   await expect(
     page.getByRole("heading", { name: "把日子，慢慢收好。" }),
   ).toBeVisible();
-}
-async function hold(page: Page, key: string, duration: number) {
-  await page.keyboard.down(key);
-  await page.waitForTimeout(duration);
-  await page.keyboard.up(key);
 }
 async function game(page: Page, first = true) {
   await page.getByRole("link", { name: "回到小屋", exact: false }).click();
@@ -47,8 +48,8 @@ async function save(page: Page) {
   await expect(page.getByRole("status")).toContainText(/已保存|草稿已/);
 }
 async function diaryDesk(page: Page) {
-  await hold(page, "d", 1400);
-  await hold(page, "w", 1600);
+  await goBedroom(page);
+  await approachDiary(page);
   await expect(page.getByRole("button", { name: /翻开日记/ })).toBeEnabled();
   await page.keyboard.press("e");
 }
@@ -173,11 +174,16 @@ test("a multi-photo album can be reordered, exported and restored on an independ
     .click();
   await expect(visitor.getByRole("status")).toContainText("内容与照片已恢复");
   await game(visitor);
-  await hold(visitor, "w", 2000);
+  await approachPhotoBoard(visitor);
   await expect(
-    visitor.getByRole("button", { name: /翻翻出游相册/ }),
+    visitor.getByRole("button", { name: /看看照片展板/ }),
   ).toBeEnabled();
   await visitor.keyboard.press("e");
+  await visitor.screenshot({
+    path: "test-results/photo-exhibition.png",
+    fullPage: true,
+  });
+  await visitor.getByRole("button", { name: /演示：两幅画的旅行/ }).click();
   await expect(
     visitor.getByRole("heading", { name: "演示：两幅画的旅行" }),
   ).toBeVisible();
@@ -200,6 +206,19 @@ test("a multi-photo album can be reordered, exported and restored on an independ
     fullPage: true,
   });
   await visitor.getByRole("button", { name: "关闭回忆", exact: true }).click();
+  await expect(visitor.locator(".photo-exhibition")).toBeVisible();
+  await visitor.setViewportSize({ width: 360, height: 640 });
+  await expect
+    .poll(() => visitor.evaluate(() => document.documentElement.scrollWidth))
+    .toBe(360);
+  const boardFits = await visitor
+    .locator(".collection-album")
+    .evaluate((dialog) => dialog.scrollWidth <= dialog.clientWidth);
+  expect(boardFits).toBe(true);
+  await visitor.screenshot({
+    path: "test-results/exhibition-mobile.png",
+    fullPage: true,
+  });
   await visitor.reload();
   await visitor.getByRole("button", { name: /回忆册/ }).click();
   const albumCard = visitor

@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { rooms } from "../content/world";
 import type { buildCatalog } from "../memories/catalog";
-import type { MemoryKind } from "../memories/model";
+import type { CollectionKind } from "../game/types";
+import { useExploration } from "../achievements/useExploration";
+import { AchievementGallery } from "./AchievementGallery";
+import { resetExperience } from "./resetExperience";
 import { MemoryCollection } from "./MemoryCollection";
 import type { Direction, GameBridge } from "../game/types";
 import { MemoryLibrary } from "./MemoryLibrary";
@@ -29,10 +32,13 @@ export function App({
   const [nearby, setNearby] = useState<string | null>(null);
   const [roomId, setRoomId] = useState("living-room");
   const [libraryOpen, setLibraryOpen] = useState(false);
-  const [collection, setCollection] = useState<MemoryKind | null>(null);
+  const [collection, setCollection] = useState<CollectionKind | null>(null);
+  const [achievementsOpen, setAchievementsOpen] = useState(false);
+  const [transition, setTransition] = useState<string | null>(null);
   const [backgroundPaused, setBackgroundPaused] = useState(false);
   const openingChecked = useRef(false);
   const book = useStoryBook(stories);
+  const exploration = useExploration();
   const room = rooms[roomId];
   const bridge = useRef<GameBridge>({
     paused: true,
@@ -43,6 +49,8 @@ export function App({
     onStory: () => {},
     onCollection: () => {},
     onRoom: setRoomId,
+    onTransition: setTransition,
+    onAchievements: () => {},
   });
 
   function clearInput() {
@@ -50,24 +58,36 @@ export function App({
     bridge.current.interactRequested = false;
   }
 
-  function openStory(id: string, fromStart = false) {
+  function openStory(id: string, fromStart = false, keepOverlay = false) {
     clearInput();
     bridge.current.paused = true;
     setLibraryOpen(false);
-    setCollection(null);
+    if (!keepOverlay) {
+      setCollection(null);
+      setAchievementsOpen(false);
+    }
     book.open(id, fromStart);
   }
   // Callbacks must see current reading state; the Phaser instance remains stable.
   bridge.current.onStory = (id) => openStory(id);
   bridge.current.onCollection = (kind) => {
     const ids = catalog.collections[kind];
-    if (ids.length === 1) {
+    if (ids.length === 1 && kind !== "album") {
       openStory(ids[0]);
       return;
     }
     clearInput();
     bridge.current.paused = true;
     setCollection(kind);
+  };
+  bridge.current.onRoom = (id) => {
+    setRoomId(id);
+    exploration.visit(id);
+  };
+  bridge.current.onAchievements = () => {
+    clearInput();
+    bridge.current.paused = true;
+    setAchievementsOpen(true);
   };
 
   useEffect(() => {
@@ -76,8 +96,16 @@ export function App({
       Boolean(book.session) ||
       libraryOpen ||
       Boolean(collection) ||
+      achievementsOpen ||
       backgroundPaused;
-  }, [ready, book.session, libraryOpen, collection, backgroundPaused]);
+  }, [
+    ready,
+    book.session,
+    libraryOpen,
+    collection,
+    achievementsOpen,
+    backgroundPaused,
+  ]);
 
   useEffect(() => {
     let disposed = false;
@@ -121,7 +149,13 @@ export function App({
 
   function closeStory(reason: "close" | "skip" | "finish") {
     clearInput();
+    if (reason === "finish" && book.session)
+      exploration.complete(stories[book.session.storyId]?.kind ?? "");
     book.close(reason);
+    // Closing and an immediate movement key can arrive before React's effect runs.
+    // Keep Phaser's pause flag in step with the remaining overlays in this event.
+    bridge.current.paused =
+      !ready || Boolean(collection) || achievementsOpen || backgroundPaused;
   }
 
   const controlsDisabled =
@@ -129,7 +163,9 @@ export function App({
     backgroundPaused ||
     Boolean(book.session) ||
     libraryOpen ||
-    Boolean(collection);
+    Boolean(collection) ||
+    achievementsOpen ||
+    Boolean(transition);
 
   return (
     <div className="app-shell">
@@ -154,6 +190,9 @@ export function App({
           <div className="room-bar">
             <div className="room-label">
               <span className="room-dot" />
+              <span className="floor-badge" data-testid="floor-name">
+                {room.floor === -1 ? "B1" : `${room.floor}F`}
+              </span>
               <strong data-testid="room-name">{room.name}</strong>
               <span className="room-subtitle">
                 /{" "}
@@ -166,7 +205,13 @@ export function App({
             </div>
             <button
               className="library-button"
-              disabled={!ready || Boolean(book.session) || Boolean(collection)}
+              disabled={
+                !ready ||
+                Boolean(book.session) ||
+                Boolean(collection) ||
+                achievementsOpen ||
+                Boolean(transition)
+              }
               onClick={() => {
                 clearInput();
                 bridge.current.paused = true;
@@ -193,7 +238,9 @@ export function App({
               ready &&
               !book.session &&
               !libraryOpen &&
-              !collection && (
+              !collection &&
+              !achievementsOpen &&
+              !transition && (
                 <div className="game-message pause-message">
                   <span>小屋在等你</span>
                   <button
@@ -204,6 +251,11 @@ export function App({
                   </button>
                 </div>
               )}
+            {transition && (
+              <div className="floor-transition" role="status">
+                {transition}
+              </div>
+            )}
             {ready && !backgroundPaused && (
               <span className="room-stamp">HOME SWEET HOME</span>
             )}
@@ -283,6 +335,33 @@ export function App({
           )}
         </section>
       </main>
+      {exploration.failed && (
+        <p className="content-error" role="status">
+          本次探索可以继续，但浏览器暂时无法保存探索印记。
+        </p>
+      )}
+      {exploration.toast && !book.session && !transition && (
+        <div className="achievement-toast" role="status">
+          ✦ 探索印记已点亮 · {exploration.toast}
+        </div>
+      )}
+      {collection && (
+        <MemoryCollection
+          kind={collection}
+          ids={catalog.collections[collection]}
+          stories={stories}
+          onOpen={(id) => openStory(id, false, collection === "album")}
+          onClose={() => setCollection(null)}
+        />
+      )}
+      {achievementsOpen && (
+        <AchievementGallery
+          progress={exploration.progress}
+          milestones={catalog.milestones}
+          onOpen={(id) => openStory(id, false, true)}
+          onClose={() => setAchievementsOpen(false)}
+        />
+      )}
       {book.session && stories[book.session.storyId] && (
         <StoryReader
           key={book.session.storyId}
@@ -292,15 +371,13 @@ export function App({
           onResume={() => setBackgroundPaused(false)}
           onMove={book.move}
           onClose={closeStory}
-        />
-      )}
-      {collection && (
-        <MemoryCollection
-          kind={collection}
-          ids={catalog.collections[collection]}
-          stories={stories}
-          onOpen={openStory}
-          onClose={() => setCollection(null)}
+          returnLabel={
+            collection === "album"
+              ? "照片展板"
+              : achievementsOpen
+                ? "成就长廊"
+                : undefined
+          }
         />
       )}
       {libraryOpen && (
@@ -310,7 +387,7 @@ export function App({
           onOpen={openStory}
           onClose={() => setLibraryOpen(false)}
           onReset={() => {
-            if (!book.reset()) return false;
+            if (!resetExperience()) return false;
             window.location.reload();
             return true;
           }}

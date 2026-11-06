@@ -1,0 +1,265 @@
+.floor-badge {
+  padding: 3px 6px;
+  border: 1px solid #b8ccbc55;
+  color: #d9cb9e;
+  font: 10px monospace;
+}
+.floor-transition {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  color: #f3e1b3;
+  font: 18px var(--serif);
+  pointer-events: none;
+}
+.achievement-toast {
+  position: fixed;
+  top: 84px;
+  right: 24px;
+  max-width: min(360px, calc(100% - 32px));
+  z-index: 5;
+  background: #3c5a51;
+  border-left: 3px solid #d4bc83;
+  color: #f0e7cc;
+  padding: 13px 18px;
+  font-size: 12px;
+  line-height: 1.8;
+  pointer-events: none;
+}
+.story-dialog.collection-album {
+  width: min(960px, calc(100% - 24px));
+  background: #b5a17e;
+  border: 9px solid #806f58;
+  color: #344b49;
+  box-shadow:
+    inset 0 0 0 2px #d0bd93,
+    0 18px 60px #102a2a66;
+}
+.collection-album .story-paper {
+  padding: 30px 30px 18px;
+}
+.collection-album h2 {
+  color: #344b49;
+  font-size: 28px;
+}
+.collection-album .eyebrow,
+.collection-album .collection-footnote {
+  color: #4c6155;
+}
+.exhibition-intro {
+  font-size: 12px;
+  line-height: 1.9;
+  color: #4c6155;
+}
+.collection-items.photo-exhibition {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 32px 24px;
+  margin: 32px 0;
+  padding: 8px 8px 26px;
+  align-items: start;
+}
+.photo-exhibition button {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  padding: 12px 12px 15px;
+  color: #405651;
+  background: #f6f2e5;
+  border: 1px solid #e7debf;
+  box-shadow: 3px 5px 6px #4b45362b;
+  transform: rotate(-2deg);
+}
+.photo-exhibition button::before {
+  content: "";
+  position: absolute;
+  width: 56px;
+  height: 17px;
+  left: calc(50% - 28px);
+  top: -10px;
+  background: #e2d7aad9;
+  border-left: 1px dashed #c3b880;
+  border-right: 1px dashed #c3b880;
+  transform: rotate(4deg);
+}
+.photo-exhibition button:nth-child(3n + 2) {
+  transform: translateY(15px) rotate(2deg);
+}
+.photo-exhibition button:nth-child(3n) {
+  transform: translateY(3px) rotate(-1deg);
+}
+.photo-exhibition button > img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: #c7d4c3;
+}
+.photo-exhibition button > span:first-of-type {
+  flex: initial;
+}
+.photo-exhibition strong {
+  font-size: 17px;
+  line-height: 1.7;
+}
+.photo-exhibition small {
+  font-size: 10px;
+  line-height: 1.8;
+}
+.photo-exhibition .cover-photo-count {
+  color: #748777;
+  font-size: 10px;
+}
+.photo-exhibition button:focus-visible {
+  outline: 3px solid #405f57;
+  outline-offset: 5px;
+}
+.story-dialog.achievement-dialog {
+  width: min(900px, calc(100% - 24px));
+  background: #2f4945;
+  color: #e8e7d2;
+  border: 3px solid #b0996c;
+}
+.achievement-dialog h2 {
+  color: #e8d39e;
+}
+.achievement-dialog .eyebrow {
+  color: #adbfaa;
+}
+.achievement-tabs {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 24px 0 16px;
+}
+.achievement-tabs button {
+  padding: 11px 14px;
+  border: 1px solid #b8c7aa55;
+  color: #bdcbb8;
+  background: transparent;
+  font-size: 12px;
+}
+.achievement-tabs button[aria-pressed="true"] {
+  color: #f1dfb1;
+  background: #50675a;
+  border-color: #baa275;
+}
+.achievement-note {
+  font-size: 12px;
+  line-height: 1.9;
+  color: #b5c4b2;
+}
+.achievement-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 22px 0;
+}
+.achievement-grid article {
+  text-align: center;
+  border: 1px solid #bcaa7e;
+  padding: 24px 14px;
+  background: #425d53;
+  min-width: 0;
+}
+.achievement-grid .badge-locked {
+  background: #2d443f;
+  border: 1px dashed #87967e88;
+  color: #a6b5a2;
+}
+.badge-symbol {
+  display: grid;
+  place-items: center;
+  border: 1px solid currentColor;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  margin: 0 auto 14px;
+  font: 24px var(--serif);
+  color: #dfc58d;
+}
+.badge-locked .badge-symbol {
+  color: #7d9482;
+}
+.achievement-grid h3 {
+  margin: 10px 0;
+  font: 18px/1.7 var(--serif);
+  color: inherit;
+  overflow-wrap: anywhere;
+}
+.achievement-grid p {
+  font-size: 11px;
+  line-height: 1.9;
+  color: inherit;
+}
+.achievement-grid small {
+  color: #c8b98f;
+  font-size: 10px;
+}
+.badge-locked small {
+  color: #8fa38d;
+}
+.life-badges button {
+  display: block;
+  margin: 12px auto 0;
+  font-size: 11px;
+}
+.life-badges .text-button {
+  color: #c7d3b7;
+}
+.milestone-manage-link {
+  color: #d9c48f;
+  font-size: 11px;
+}
+.story-dialog.reader-milestone {
+  background: #3c554d;
+  color: #e9e5cd;
+  border: 4px double #c4ad7a;
+}
+.reader-milestone h2 {
+  color: #e4ce97;
+  font: 27px/1.7 var(--serif);
+}
+.reader-milestone .eyebrow,
+.reader-milestone .memory-meta {
+  color: #bcc8ad;
+}
+.reader-milestone .story-body p {
+  color: #e9e5cd;
+}
+.reader-milestone .text-button {
+  color: #c4d0b6;
+}
+@media (max-width: 740px) {
+  .collection-album .story-paper {
+    padding: 28px 15px 16px;
+  }
+  .collection-album h2 {
+    font-size: 23px;
+  }
+  .collection-items.photo-exhibition {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 30px 14px;
+    padding: 4px 3px 20px;
+  }
+  .photo-exhibition button {
+    padding: 8px;
+  }
+  .photo-exhibition strong {
+    font-size: 14px;
+  }
+  .photo-exhibition button::before {
+    width: 40px;
+    left: calc(50% - 20px);
+  }
+  .achievement-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .achievement-toast {
+    right: 16px;
+    top: 65px;
+  }
+}

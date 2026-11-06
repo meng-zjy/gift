@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import type { Furniture, RoomDefinition } from "./types";
+import type { Furniture, RoomDefinition, Staircase } from "./types";
 import { artworks } from "../content/artworks";
 
 const colors = {
@@ -69,6 +69,7 @@ export function drawRoom(scene: Phaser.Scene, room: RoomDefinition): void {
     }
   }
 
+  for (const stair of room.stairs ?? []) drawStairs(scene, stair);
   for (const furniture of room.furniture) drawFurniture(scene, furniture);
 }
 
@@ -135,17 +136,10 @@ function drawWalls(
     rect(26, 77, 428, 7, 0x667f91);
     rect(26, 77, 428, 2, 0xc8d4cb);
     rect(87, 30, 78, 45, 0x697e90);
-    rect(91, 33, 70, 37, 0x344e70);
+    rect(91, 33, 70, 37, 0xa4c2c0);
+    rect(91, 53, 70, 17, 0x94ad8e);
     rect(125, 33, 3, 37, 0xc8d3cc);
     rect(91, 50, 70, 2, 0xc8d3cc);
-    rect(139, 39, 7, 7, 0xf0dc9f);
-    for (const [x, y] of [
-      [100, 40],
-      [115, 45],
-      [150, 56],
-      [107, 61],
-    ])
-      rect(x, y, 1, 1, 0xe9dcb8);
     rect(84, 29, 10, 42, 0xb3a5ba);
     rect(158, 29, 10, 42, 0xb3a5ba);
     rect(82, 70, 88, 4, 0xb09b83);
@@ -154,6 +148,31 @@ function drawWalls(
     rect(338, 38, 26, 16, 0xe3d2a6);
     rect(342, 35, 18, 4, 0xe3d2a6);
     rect(345, 68, 13, 3, 0x937957);
+  } else if (room.theme === "hallway") {
+    rect(26, 26, 428, 56, 0xc9d5c6);
+    for (let x = 32; x < 450; x += 18) rect(x, 28, 1, 48, 0xb8c9b7);
+    rect(26, 77, 428, 7, 0x8ba18d);
+    rect(73, 33, 91, 35, 0x9b8b74);
+    rect(77, 36, 83, 28, 0xafcbc3);
+    rect(77, 53, 83, 11, 0x94ad8e);
+    rect(117, 36, 3, 28, 0xf0e9ce);
+    rect(195, 42, 168, 3, 0x8b8170);
+    for (const x of [210, 253, 296, 339]) {
+      rect(x, 35, 17, 22, 0xd1b88c);
+      rect(x + 3, 38, 11, 16, 0xb1bfa7);
+    }
+  } else if (room.theme === "achievements") {
+    rect(26, 26, 428, 56, 0x65776e);
+    for (let x = 32; x < 450; x += 20) rect(x, 29, 1, 46, 0x718278);
+    rect(26, 77, 428, 7, 0xaa9470);
+    for (const x of [83, 239, 395]) {
+      rect(x - 8, 40, 16, 20, 0xd6bd83);
+      rect(x - 5, 43, 10, 12, 0xf0dfaa);
+      rect(x - 2, 60, 4, 8, 0x8c7760);
+    }
+    rect(177, 31, 125, 4, 0xa58b66);
+    rect(191, 35, 97, 19, 0x51675e);
+    rect(199, 42, 81, 2, 0xa1b29b);
   } else {
     rect(26, 26, 428, 56, 0xeee5cc);
     for (let y = 28; y < 77; y += 12) {
@@ -185,6 +204,54 @@ function drawWalls(
     rect(26, 77, 428, 7, 0x8caa98);
     rect(26, 77, 428, 2, 0xc3d0b6);
   }
+}
+
+/** Stairs are a flat walkable strip; rail pixels match the physics bounds exactly. */
+function drawStairs(scene: Phaser.Scene, stair: Staircase): void {
+  const brush = scene.add.graphics().setDepth(1);
+  const rect = (
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    color: number,
+  ) => brush.fillStyle(color).fillRect(x, y, width, height);
+  rect(stair.x, stair.y, stair.width, stair.height, 0x394e51);
+  for (let offset = 6; offset < stair.height - 6; offset += 9) {
+    const progress = offset / stair.height;
+    const light = stair.direction === "up" ? progress : 1 - progress;
+    const color = Phaser.Display.Color.GetColor(
+      98 + Math.round(light * 63),
+      100 + Math.round(light * 47),
+      86 + Math.round(light * 34),
+    );
+    rect(stair.x + 6, stair.y + offset, stair.width - 12, 8, color);
+    rect(stair.x + 7, stair.y + offset, stair.width - 14, 1, 0xd6c6a1);
+  }
+  rect(stair.x, stair.y, 6, stair.height, 0x8c775f);
+  rect(stair.x + stair.width - 6, stair.y, 6, stair.height, 0x8c775f);
+  rect(stair.x + 1, stair.y, 2, stair.height, 0xc4ac85);
+  rect(stair.x + stair.width - 3, stair.y, 2, stair.height, 0xc4ac85);
+  const closedY =
+    stair.direction === "up" ? stair.y : stair.y + stair.height - 6;
+  rect(stair.x, closedY, stair.width, 6, 0x71644f);
+  const entranceY =
+    stair.direction === "up" ? stair.y + stair.height + 8 : stair.y - 12;
+  scene.add
+    .text(
+      stair.x + stair.width / 2,
+      entranceY,
+      `${stair.direction === "up" ? "↑" : "↓"} ${stair.label}`,
+      {
+        fontSize: "9px",
+        color: "#f3e1b3",
+        fontFamily: "sans-serif",
+        backgroundColor: "#334b4d",
+      },
+    )
+    .setPadding(3, 2)
+    .setOrigin(0.5)
+    .setDepth(1);
 }
 
 function drawFurniture(scene: Phaser.Scene, item: Furniture): void {
@@ -246,7 +313,32 @@ function drawFurniture(scene: Phaser.Scene, item: Furniture): void {
     return;
   }
   rect(3, item.height - 3, item.width, 7, 0x9c816d);
-  if (item.kind === "sofa") {
+  if (item.kind === "photo-board") {
+    rect(0, 0, item.width, item.height, 0x6b6756);
+    rect(3, 3, item.width - 6, item.height - 8, 0xae9d7b);
+    for (let index = 0; index < 5; index++) {
+      const x = 10 + index * 28;
+      const y = index % 2 ? 14 : 7;
+      rect(x, y, 23, 27, 0xf1ebd9);
+      rect(x + 2, y + 3, 19, 15, index % 2 ? 0x8aa9b7 : 0x99b59a);
+      rect(x + 8, y - 2, 9, 4, 0xd4c494);
+      rect(x + 4, y + 21, 15, 1, 0xb5aa8b);
+    }
+    rect(9, item.height - 5, 5, 9, 0x846f57);
+    rect(item.width - 14, item.height - 5, 5, 9, 0x846f57);
+  } else if (item.kind === "achievement-wall") {
+    rect(0, 0, item.width, item.height, 0x4b625b);
+    rect(3, 3, item.width - 6, item.height - 6, 0x74857a);
+    for (let index = 0; index < 5; index++) {
+      const x = 9 + index * 33;
+      rect(x, 7, 29, 33, 0xa18a62);
+      rect(x + 2, 9, 25, 29, 0xd4bc83);
+      rect(x + 5, 12, 19, 21, 0x566f63);
+      rect(x + 11, 15, 7, 8, 0xd4bc83);
+      rect(x + 9, 23, 11, 2, 0xd4bc83);
+      rect(x + 6, 29, 17, 1, 0x9eae95);
+    }
+  } else if (item.kind === "sofa") {
     rect(0, 0, 100, 49, colors.outline);
     rect(3, 3, 94, 42, colors.sage);
     rect(8, 5, 84, 13, colors.sageLight);

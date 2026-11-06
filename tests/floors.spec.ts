@@ -1,0 +1,248 @@
+import { expect, test } from "@playwright/test";
+import {
+  goUpstairs,
+  goBasement,
+  openAchievementDisplay,
+  holdDirection,
+  expectRoom,
+} from "./helpers";
+import { buildCatalog } from "../src/memories/catalog";
+import { validateArchive, type MemoryEntry } from "../src/memories/model";
+import { parseExploration } from "../src/achievements/useExploration";
+
+async function enter(page: import("@playwright/test").Page) {
+  await page.goto("/");
+  await page.getByRole("button", { name: "跳过本段剧情" }).click();
+  await expect(page.locator(".direction-up")).toBeEnabled();
+}
+
+test("stairs allow turning back and pausing before the landing, then travel up and down without bouncing", async ({
+  page,
+}) => {
+  await enter(page);
+  await holdDirection(page, "d", 1400);
+  await holdDirection(page, "w", 900);
+  await expectRoom(page, "客厅");
+  await page.keyboard.press("e");
+  await expectRoom(page, "客厅");
+  await page.evaluate(() => window.dispatchEvent(new Event("blur")));
+  await page.getByRole("button", { name: "继续探索" }).click();
+  await holdDirection(page, "s", 900);
+  await expectRoom(page, "客厅");
+  await holdDirection(page, "w", 3000);
+  await expectRoom(page, "二楼过道");
+  await expect(page.getByTestId("floor-name")).toHaveText("2F");
+  await page.screenshot({
+    path: "test-results/upper-hall.png",
+    fullPage: true,
+  });
+  await holdDirection(page, "s", 2300);
+  await expectRoom(page, "客厅");
+  await expect(page.getByTestId("floor-name")).toHaveText("1F");
+  await expect(page.locator("canvas")).toHaveCount(1);
+});
+
+test("basement achievements persist and the return staircase works with reduced motion", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await enter(page);
+  await goBasement(page);
+  await expect(page.getByTestId("floor-name")).toHaveText("B1");
+  await page.screenshot({ path: "test-results/basement.png", fullPage: true });
+  await openAchievementDisplay(page);
+  await expect(page.locator(".badge-earned")).toHaveCount(1);
+  await page.getByRole("button", { name: /生活里程碑/ }).click();
+  await expect(page.getByText("待记录", { exact: true })).toHaveCount(3);
+  await page.getByRole("button", { name: "关闭成就长廊" }).click();
+  await holdDirection(page, "s", 900);
+  await holdDirection(page, "a", 2000);
+  await holdDirection(page, "w", 2400);
+  await expectRoom(page, "客厅");
+  const progress = await page.evaluate(() =>
+    localStorage.getItem("our-little-world:exploration:v1"),
+  );
+  await page.reload();
+  await expect(page.getByTestId("room-name")).toHaveText("客厅");
+  expect(
+    await page.evaluate(() =>
+      localStorage.getItem("our-little-world:exploration:v1"),
+    ),
+  ).toBe(progress);
+  await goUpstairs(page);
+});
+
+test("publish a real milestone, read its story and linked memory, and preserve it when resetting exploration", async ({
+  page,
+}) => {
+  test.setTimeout(45000);
+  await page.goto("/#manage");
+  await page.getByRole("button", { name: "＋ 新建日记", exact: true }).click();
+  await page.getByLabel("标题", { exact: true }).fill("那天的散步");
+  await page.getByLabel("正文", { exact: true }).fill("演示关联日记。");
+  await page.getByLabel("发布状态").selectOption("published");
+  await page.getByRole("button", { name: "保存修改", exact: true }).click();
+  await expect(page.getByRole("status")).toContainText("已保存");
+  await page
+    .getByRole("button", { name: "＋ 新建生活里程碑", exact: true })
+    .click();
+  await page.getByLabel("标题", { exact: true }).fill("演示：第一次约会");
+  await page.getByLabel("日期", { exact: true }).fill("2026-11-06");
+  await page.getByLabel("里程碑类型").selectOption("first-date");
+  await page
+    .getByLabel("关联回忆（选填）")
+    .selectOption({ label: "那天的散步" });
+  await page.getByLabel("正文", { exact: true }).fill("演示里程碑故事。");
+  await page.getByLabel("发布状态").selectOption("published");
+  await page.getByRole("button", { name: "保存修改", exact: true }).click();
+  await expect(page.getByRole("status")).toContainText("已保存");
+  const backup = await page.evaluate(async () => {
+    const repositoryPath = "/src/memories/repository.ts";
+    const backupPath = "/src/memories/backup.ts";
+    const { memoryRepository } = await import(repositoryPath);
+    const { exportBackup, importBackup } = await import(backupPath);
+    const blob = await exportBackup(await memoryRepository.load());
+    const exported = JSON.parse(await blob.text());
+    const restored = await importBackup(new File([blob], "backup.json"));
+    const legacy = await importBackup(
+      new File(
+        [
+          JSON.stringify({
+            ...exported,
+            version: 1,
+            entries: exported.entries.filter(
+              (entry: { kind: string }) => entry.kind === "diary",
+            ),
+          }),
+        ],
+        "legacy.json",
+      ),
+    );
+    return {
+      version: exported.version,
+      restored: restored.entries.find(
+        (entry: { kind: string }) => entry.kind === "milestone",
+      ),
+      legacy: legacy.entries.length,
+    };
+  });
+  expect(backup.version).toBe(2);
+  expect(backup.restored).toMatchObject({
+    milestoneKey: "first-date",
+    date: "2026-11-06",
+  });
+  expect(backup.restored.relatedId).toBeTruthy();
+  expect(backup.legacy).toBe(1);
+  await page.getByRole("link", { name: /回到小屋/ }).click();
+  await page.getByRole("button", { name: "跳过本段剧情" }).click();
+  await goBasement(page);
+  await openAchievementDisplay(page);
+  await page.getByRole("button", { name: /生活里程碑/ }).click();
+  await expect(page.getByText("待记录", { exact: true })).toHaveCount(2);
+  await page.screenshot({
+    path: "test-results/achievements.png",
+    fullPage: true,
+  });
+  await page.getByRole("button", { name: "读这段故事" }).click();
+  await expect(
+    page.getByText("演示里程碑故事。", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: /读完，回到成就长廊/ }).click();
+  await page.getByRole("button", { name: /翻开关联回忆/ }).click();
+  await expect(page.getByText("演示关联日记。", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "关闭回忆", exact: true }).click();
+  await page.getByRole("button", { name: "关闭成就长廊" }).click();
+  await page.getByRole("button", { name: /回忆册/ }).click();
+  await page.getByRole("button", { name: "重新开始体验", exact: true }).click();
+  await page.getByRole("button", { name: "确认重新开始", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "欢迎来到，我们的小小世界" }),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () =>
+        JSON.parse(localStorage.getItem("our-little-world:exploration:v1")!)
+          .rooms["achievement-hall"],
+    ),
+  ).toBeUndefined();
+  await page.goto("/#manage");
+  await expect(
+    page.locator(".entry-select").filter({ hasText: "演示：第一次约会" }),
+  ).toBeVisible();
+});
+
+test("milestone uniqueness and unpublished links are enforced; corrupt exploration data is ignored", () => {
+  const milestone: MemoryEntry = {
+    id: "milestone",
+    revision: "one",
+    kind: "milestone",
+    status: "published",
+    title: "演示",
+    date: "2026-11-06",
+    body: "故事",
+    place: "",
+    voice: "us",
+    photos: [],
+    updatedAt: "2026-11-06T00:00:00Z",
+    milestoneKey: "first-date",
+    relatedId: "diary",
+  };
+  const archive = {
+    version: 1 as const,
+    revision: "one",
+    entries: [milestone],
+    assets: [],
+  };
+  expect(() =>
+    validateArchive({
+      ...archive,
+      entries: [
+        {
+          ...milestone,
+          milestoneKey: ["first-date"],
+        } as unknown as MemoryEntry,
+      ],
+    }),
+  ).toThrow("里程碑类型无效");
+  expect(() =>
+    validateArchive({
+      ...archive,
+      entries: [milestone, { ...milestone, id: "duplicate" }],
+    }),
+  ).toThrow();
+  const catalog = buildCatalog(
+    {
+      ...archive,
+      entries: [
+        milestone,
+        {
+          ...milestone,
+          id: "diary",
+          kind: "diary",
+          status: "draft",
+          relatedId: undefined,
+        },
+      ],
+    },
+    {},
+  );
+  expect(catalog.milestones[0].relatedStoryId).toBeUndefined();
+  expect(parseExploration("broken")).toEqual({
+    version: 1,
+    rooms: {},
+    reading: {},
+  });
+  expect(
+    parseExploration(
+      JSON.stringify({
+        version: 1,
+        rooms: { "living-room": "2026-11-06T00:00:00Z", unknown: "2026-11-06" },
+        reading: { memory: "bad" },
+      }),
+    ),
+  ).toEqual({
+    version: 1,
+    rooms: { "living-room": "2026-11-06T00:00:00Z" },
+    reading: {},
+  });
+});

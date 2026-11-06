@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import type { Story } from "../game/types";
-import { kindNames, type MemoryKind } from "../memories/model";
+import type { CollectionKind, Story } from "../game/types";
+import { kindNames } from "../memories/model";
 
 export function MemoryCollection({
   kind,
@@ -9,7 +9,7 @@ export function MemoryCollection({
   onOpen,
   onClose,
 }: {
-  kind: MemoryKind;
+  kind: CollectionKind;
   ids: string[];
   stories: Record<string, Story>;
   onOpen: (id: string) => void;
@@ -42,7 +42,14 @@ export function MemoryCollection({
         <span className="eyebrow">
           {kind === "album" ? "把那天装进相册" : "一页一页，慢慢翻"}
         </span>
-        <h2 id="collection-title">{kindNames[kind]}</h2>
+        <h2 id="collection-title">
+          {kind === "album" ? "一起去过的地方" : kindNames[kind]}
+        </h2>
+        {kind === "album" && (
+          <p className="exhibition-intro">
+            每张封面，都是一次出发。点开照片，把那天再走一遍。
+          </p>
+        )}
         {!ids.length && (
           <div className="collection-empty">
             <span>▧</span>
@@ -50,7 +57,9 @@ export function MemoryCollection({
             <a href="#manage">去手账台添加相册 →</a>
           </div>
         )}
-        <div className="collection-items">
+        <div
+          className={`collection-items ${kind === "album" ? "photo-exhibition" : ""}`}
+        >
           {ids.map((id) => (
             <button key={id} onClick={() => onOpen(id)}>
               {stories[id].photos?.[0] && (
@@ -60,7 +69,11 @@ export function MemoryCollection({
                 <strong>{stories[id].title}</strong>
                 <small>{stories[id].speaker}</small>
               </span>
-              <span aria-hidden="true">↗</span>
+              <span className="cover-photo-count">
+                {kind === "album"
+                  ? `${stories[id].photos?.length ?? 0} 张照片 · 打开 →`
+                  : "↗"}
+              </span>
             </button>
           ))}
         </div>

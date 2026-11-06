@@ -87,7 +87,9 @@ export function MemoryLibrary({
           <p>每台设备分别记住自己的探索。这本回忆册，只属于当前浏览器。</p>
           {confirmReset ? (
             <div>
-              <p>清空这台浏览器的阅读记录，从开场重新体验？故事内容会保留。</p>
+              <p>
+                清空这台浏览器的阅读与探索记录，从开场重新体验？故事、照片与生活里程碑会保留。
+              </p>
               <button
                 className="secondary-button"
                 onClick={() => setConfirmReset(false)}

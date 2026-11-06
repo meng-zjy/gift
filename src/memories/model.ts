@@ -1,4 +1,5 @@
-export type MemoryKind = "diary" | "words" | "album";
+import { lifeMilestones, type MilestoneKey } from "../achievements/definitions";
+export type MemoryKind = "diary" | "words" | "album" | "milestone";
 export type Voice = "me" | "her" | "us";
 export interface MemoryPhoto {
   id: string;
@@ -16,6 +17,8 @@ export interface MemoryEntry {
   voice: Voice;
   photos: MemoryPhoto[];
   updatedAt: string;
+  milestoneKey?: MilestoneKey;
+  relatedId?: string;
 }
 export interface PhotoAsset {
   id: string;
@@ -31,6 +34,7 @@ export const kindNames: Record<MemoryKind, string> = {
   diary: "日记",
   words: "说过的话",
   album: "出游相册",
+  milestone: "生活里程碑",
 };
 export const voiceNames: Record<Voice, string> = {
   me: "我想对她说",
@@ -65,7 +69,7 @@ export function validateEntry(value: unknown): MemoryEntry {
   if (!value || typeof value !== "object") throw new Error("内容格式不正确");
   const entry = value as Record<string, unknown>;
   if (
-    !["diary", "words", "album"].includes(String(entry.kind)) ||
+    !["diary", "words", "album", "milestone"].includes(String(entry.kind)) ||
     !["draft", "published"].includes(String(entry.status)) ||
     !["me", "her", "us"].includes(String(entry.voice))
   )
@@ -92,7 +96,7 @@ export function validateEntry(value: unknown): MemoryEntry {
   if (new Set(photos.map((photo) => photo.id)).size !== photos.length)
     throw new Error("照片编号重复");
   if (entry.kind !== "album" && photos.length)
-    throw new Error("日记与话语不能附带相册照片");
+    throw new Error("只有相册可以附带照片");
   const body = boundedText(entry.body, "正文", 20000);
   if (
     entry.status === "published" &&
@@ -106,6 +110,21 @@ export function validateEntry(value: unknown): MemoryEntry {
   const updatedAt = boundedText(entry.updatedAt, "修改时间", 40);
   if (!Number.isFinite(Date.parse(updatedAt)))
     throw new Error("修改时间不正确");
+  let milestoneKey: MilestoneKey | undefined;
+  let relatedId: string | undefined;
+  if (entry.kind === "milestone") {
+    const key = entry.milestoneKey ?? "custom";
+    if (
+      typeof key !== "string" ||
+      (key !== "custom" && !Object.hasOwn(lifeMilestones, key))
+    )
+      throw new Error("里程碑类型无效");
+    milestoneKey = key as MilestoneKey;
+    if (entry.relatedId) {
+      relatedId = identifier(entry.relatedId);
+      if (relatedId === entry.id) throw new Error("里程碑不能关联自身");
+    }
+  }
   return {
     id: identifier(entry.id),
     revision: identifier(entry.revision),
@@ -118,6 +137,8 @@ export function validateEntry(value: unknown): MemoryEntry {
     place: boundedText(entry.place, "地点", 120),
     photos,
     updatedAt,
+    milestoneKey,
+    relatedId,
   };
 }
 
@@ -136,6 +157,16 @@ export function validateArchive(value: MemoryArchive): MemoryArchive {
   const entries = value.entries.map(validateEntry);
   if (new Set(entries.map((entry) => entry.id)).size !== entries.length)
     throw new Error("内容编号重复");
+  const presets = entries
+    .filter(
+      (entry) =>
+        entry.kind === "milestone" &&
+        entry.status === "published" &&
+        entry.milestoneKey !== "custom",
+    )
+    .map((entry) => entry.milestoneKey);
+  if (new Set(presets).size !== presets.length)
+    throw new Error("这个预设里程碑已发布，请编辑原记录或改为自定义里程碑");
   const assets = new Map<string, PhotoAsset>();
   let totalBytes = 0;
   for (const asset of value.assets) {

@@ -9,6 +9,10 @@ import {
 } from "../../memories/model";
 import { preparePhoto } from "../../memories/images";
 import { usePhotoURLs } from "../../memories/useMemories";
+import {
+  lifeMilestones,
+  type MilestoneKey,
+} from "../../achievements/definitions";
 
 function today() {
   const now = new Date();
@@ -35,6 +39,7 @@ export function MemoryEditor({
   entry,
   kind,
   storedAssets,
+  entries,
   busy,
   onSave,
   onDirty,
@@ -42,6 +47,7 @@ export function MemoryEditor({
   entry?: MemoryEntry;
   kind: MemoryKind;
   storedAssets: PhotoAsset[];
+  entries: MemoryEntry[];
   busy: boolean;
   onSave: (
     entry: MemoryEntry,
@@ -172,6 +178,57 @@ export function MemoryEditor({
             }
           />
         </label>
+        {kind === "milestone" && (
+          <div className="editor-fields">
+            <label>
+              里程碑类型
+              <select
+                value={draft.milestoneKey ?? "custom"}
+                onChange={(event) =>
+                  update("milestoneKey", event.target.value as MilestoneKey)
+                }
+              >
+                <option value="custom">自定义里程碑</option>
+                {Object.entries(lifeMilestones).map(([key, item]) => (
+                  <option key={key} value={key}>
+                    {item.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              关联回忆（选填）
+              <select
+                value={draft.relatedId ?? ""}
+                onChange={(event) =>
+                  update("relatedId", event.target.value || undefined)
+                }
+              >
+                <option value="">不关联回忆</option>
+                {entries
+                  .filter(
+                    (item) =>
+                      item.status === "published" && item.kind !== "milestone",
+                  )
+                  .map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.title}
+                    </option>
+                  ))}
+                {draft.relatedId &&
+                  !entries.some(
+                    (item) =>
+                      item.id === draft.relatedId &&
+                      item.status === "published",
+                  ) && (
+                    <option value={draft.relatedId}>
+                      原关联回忆未发布或已删除
+                    </option>
+                  )}
+              </select>
+            </label>
+          </div>
+        )}
         <div className="editor-fields">
           <label>
             日期
@@ -336,10 +393,12 @@ export function MemoryEditor({
             {draft.status === "draft"
               ? "草稿只收在手账台，发布后才会出现在小屋里。"
               : kind === "diary"
-                ? "保存后，去客厅书桌翻开这页日记。"
+                ? "保存后，去二楼卧室书桌翻开这页日记。"
                 : kind === "words"
                   ? "保存后，和客厅的小人说说话。"
-                  : "保存后，去客厅书架翻开出游相册。"}
+                  : kind === "album"
+                    ? "保存后，去二楼过道的照片展板看看。"
+                    : "保存后，去负一楼成就长廊查看。"}
           </p>
           <button className="primary-button" type="submit">
             {busy ? "正在保存…" : "保存修改"}

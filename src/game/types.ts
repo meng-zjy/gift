@@ -23,7 +23,8 @@ export interface Story {
     | "collection"
     | "dessert"
     | "gallery"
-    | "album";
+    | "album"
+    | "milestone";
   speaker: string;
   paragraphs: string[];
   artworkId?: ArtworkId;
@@ -44,7 +45,9 @@ export interface Furniture extends Bounds {
     | "counter"
     | "table"
     | "bed"
-    | "painting";
+    | "painting"
+    | "photo-board"
+    | "achievement-wall";
   solid?: boolean;
   artworkId?: ArtworkId;
   doorSide?: "left" | "right" | "bottom";
@@ -60,12 +63,22 @@ export interface Furniture extends Bounds {
 export type InteractionAction =
   | { type: "story"; storyId: string }
   | { type: "collection"; collection: CollectionKind }
+  | { type: "achievements" }
   | { type: "travel"; roomId: string; spawnId: string };
+
+export interface Staircase extends Bounds {
+  id: string;
+  label: string;
+  direction: "up" | "down";
+  landing: Bounds;
+  destination: { roomId: string; spawnId: string };
+}
 
 export interface RoomDefinition {
   id: string;
   name: string;
-  theme: "living" | "kitchen" | "bedroom";
+  floor: -1 | 1 | 2;
+  theme: "living" | "kitchen" | "bedroom" | "hallway" | "achievements";
   hint: string;
   width: number;
   height: number;
@@ -73,6 +86,7 @@ export interface RoomDefinition {
   spawn: Point;
   entrances: Record<string, Point>;
   furniture: Furniture[];
+  stairs?: Staircase[];
 }
 
 /** Shared input and callbacks keep the renderer independent of React components. */
@@ -85,4 +99,6 @@ export interface GameBridge {
   onStory: (storyId: string) => void;
   onCollection: (collection: CollectionKind) => void;
   onRoom: (roomId: string) => void;
+  onTransition: (label: string | null) => void;
+  onAchievements: () => void;
 }

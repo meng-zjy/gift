@@ -4,16 +4,17 @@ import type { RoomDefinition } from "../game/types";
 export const bedroom: RoomDefinition = {
   id: "bedroom",
   name: "卧室",
+  floor: 2,
   theme: "bedroom",
-  hint: "梵高的《卧室》挂在墙上；左侧门洞回到客厅。",
+  hint: "日记在窗下书桌，梵高的画挂在墙上。左侧门洞回二楼过道。",
   width: 480,
   height: 320,
   walkable: { x: 28, y: 82, width: 424, height: 208 },
   spawn: { x: 60, y: 210 },
-  entrances: { "from-living": { x: 60, y: 210 } },
+  entrances: { "from-hall": { x: 60, y: 210 } },
   furniture: [
     {
-      id: "bedroom-living-door",
+      id: "bedroom-hall-door",
       kind: "door",
       x: 20,
       y: 178,
@@ -22,11 +23,11 @@ export const bedroom: RoomDefinition = {
       solid: false,
       doorSide: "left",
       interaction: {
-        label: "回客厅",
+        label: "回二楼过道",
         range: 36,
         action: {
           type: "travel",
-          roomId: "living-room",
+          roomId: "upper-hall",
           spawnId: "from-bedroom",
         },
       },
@@ -47,6 +48,18 @@ export const bedroom: RoomDefinition = {
       },
     },
     { id: "our-bed", kind: "bed", x: 312, y: 120, width: 100, height: 132 },
+    {
+      id: "diary-desk",
+      kind: "desk",
+      x: 190,
+      y: 114,
+      width: 89,
+      height: 42,
+      interaction: {
+        label: "翻开日记",
+        action: { type: "collection", collection: "diary" },
+      },
+    },
     {
       id: "bedroom-books",
       kind: "shelf",

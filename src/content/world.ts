@@ -1,5 +1,7 @@
 import { livingRoom, stories as livingStories } from "./livingRoom";
 import { bedroom } from "./bedroom";
+import { upperHall } from "./upperHall";
+import { achievementHall } from "./achievementHall";
 import type { RoomDefinition, Story } from "../game/types";
 
 export const stories: Record<string, Story> = {
@@ -56,6 +58,7 @@ export const stories: Record<string, Story> = {
 const kitchen: RoomDefinition = {
   id: "kitchen",
   name: "厨房",
+  floor: 1,
   theme: "kitchen",
   hint: "左侧门洞可以回客厅。冰箱四周都能打开口味小本，餐桌上还放着小蛋糕。",
   width: 480,
@@ -123,4 +126,6 @@ export const rooms: Record<string, RoomDefinition> = {
   [livingRoom.id]: livingRoom,
   [kitchen.id]: kitchen,
   [bedroom.id]: bedroom,
+  [upperHall.id]: upperHall,
+  [achievementHall.id]: achievementHall,
 };

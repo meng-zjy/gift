@@ -11,6 +11,7 @@ interface Props {
   onResume: () => void;
   onMove: (step: number) => void;
   onClose: (reason: "close" | "skip" | "finish") => void;
+  returnLabel?: string;
 }
 
 const labels = {
@@ -21,6 +22,7 @@ const labels = {
   dessert: "今日份的甜",
   gallery: "小屋画廊",
   album: "我们去过的地方",
+  milestone: "生活里的闪光时刻",
 };
 
 export function StoryReader({
@@ -30,6 +32,7 @@ export function StoryReader({
   onResume,
   onMove,
   onClose,
+  returnLabel,
 }: Props) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [pixelView, setPixelView] = useState(false);
@@ -201,7 +204,9 @@ export function StoryReader({
             onClick={() => (last ? close("finish") : onMove(session.step + 1))}
           >
             {last
-              ? "读完，回到小屋 →"
+              ? returnLabel
+                ? `读完，回到${returnLabel} →`
+                : "读完，回到小屋 →"
               : story.kind === "gallery"
                 ? "下一幅 →"
                 : story.kind === "album"
@@ -211,7 +216,7 @@ export function StoryReader({
         </div>
         <div className="story-tools">
           <button className="text-button" onClick={() => close("close")}>
-            先离开，稍后继续
+            {returnLabel ? `返回${returnLabel}` : "先离开，稍后继续"}
           </button>
           <button className="text-button" onClick={() => close("skip")}>
             跳过本段剧情

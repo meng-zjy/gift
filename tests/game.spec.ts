@@ -1,10 +1,11 @@
+import {
+  goBedroom,
+  approachDiary,
+  playerPosition,
+  walkTo,
+  holdDirection as holdKey,
+} from "./helpers";
 import { expect, test, type Page } from "@playwright/test";
-
-async function holdKey(page: Page, key: string, duration: number) {
-  await page.keyboard.down(key);
-  await page.waitForTimeout(duration);
-  await page.keyboard.up(key);
-}
 
 async function openGame(page: Page) {
   await page.goto("/");
@@ -22,8 +23,8 @@ test("walk to the diary, freeze movement while reading, close and read again", a
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await openGame(page);
-  await holdKey(page, "ArrowRight", 1400);
-  await holdKey(page, "ArrowUp", 1600);
+  await goBedroom(page);
+  await approachDiary(page);
   await expect(page.getByRole("button", { name: /翻开日记/ })).toBeEnabled();
   await page.keyboard.press("e");
   await expect(page.getByRole("dialog")).toBeVisible();
@@ -31,9 +32,9 @@ test("walk to the diary, freeze movement while reading, close and read again", a
     page.getByRole("heading", { name: "先把这一页，留给我们" }),
   ).toBeVisible();
   await page.screenshot({ path: "test-results/diary.png", fullPage: true });
-  const before = await page.locator("canvas").screenshot();
+  const before = await playerPosition(page);
   await holdKey(page, "ArrowLeft", 500);
-  expect(await page.locator("canvas").screenshot()).toEqual(before);
+  expect(await playerPosition(page)).toEqual(before);
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await page.keyboard.press("e");
@@ -120,13 +121,13 @@ test("opening can be skipped, resumed after reload, paused and replayed without 
   await page.getByRole("button", { name: "继续阅读" }).click();
   await page.getByRole("button", { name: "下一段" }).click();
   await page.getByRole("button", { name: "读完，回到小屋" }).click();
-  const before = await page.locator("canvas").screenshot();
+  const before = await playerPosition(page);
   await page.getByRole("button", { name: /回忆册/ }).click();
   await expect(page.getByText("已读完 · 停在第 3 段")).toBeVisible();
   await page.getByRole("button", { name: "从头回看" }).click();
   await expect(page.getByText("1 / 3")).toBeVisible();
   await page.getByRole("button", { name: "跳过本段剧情" }).click();
-  expect(await page.locator("canvas").screenshot()).toEqual(before);
+  expect(await playerPosition(page)).toEqual(before);
   await page.getByRole("button", { name: /回忆册/ }).click();
   await expect(page.getByText("已读完 · 停在第 3 段")).toBeVisible();
 });
@@ -163,12 +164,10 @@ test("the bedroom has its own painting and wall openings lead back home", async 
   page,
 }) => {
   await openGame(page);
-  await holdKey(page, "s", 400);
-  await page.keyboard.press("e");
-  await expect(page.getByTestId("room-name")).toHaveText("卧室");
+  await goBedroom(page);
   await page.screenshot({ path: "test-results/bedroom.png", fullPage: true });
-  await holdKey(page, "d", 2000);
-  await holdKey(page, "w", 1600);
+  await walkTo(page, "d", "x", 294);
+  await walkTo(page, "w", "y", 90);
   await expect(
     page.getByRole("button", { name: /看看梵高的卧室/ }),
   ).toBeEnabled();
@@ -186,10 +185,10 @@ test("the bedroom has its own painting and wall openings lead back home", async 
     fullPage: true,
   });
   await page.getByRole("button", { name: "关闭回忆", exact: true }).click();
-  await holdKey(page, "s", 1400);
-  await holdKey(page, "a", 2100);
+  await walkTo(page, "s", "y", 215);
+  await walkTo(page, "a", "x", 50);
   await page.keyboard.press("e");
-  await expect(page.getByTestId("room-name")).toHaveText("客厅");
+  await expect(page.getByTestId("room-name")).toHaveText("二楼过道");
 });
 
 test("the fridge can be discovered from above and from its right side", async ({
@@ -229,8 +228,8 @@ test("a new visitor has independent progress and restarting requires confirmatio
   browser,
 }) => {
   await openGame(page);
-  await holdKey(page, "d", 1400);
-  await holdKey(page, "w", 1600);
+  await goBedroom(page);
+  await approachDiary(page);
   await page.keyboard.press("e");
   await page.getByRole("button", { name: "关闭回忆", exact: true }).click();
   const fresh = await browser.newContext();
@@ -351,6 +350,7 @@ test("phone controls move and release; losing focus requires explicit resume", a
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth),
   ).toBeLessThanOrEqual(390);
+  await goBedroom(page);
   const right = page.getByRole("button", { name: "向右移动" });
   await right.scrollIntoViewIfNeeded();
   const rightBox = (await right.boundingBox())!;
@@ -359,7 +359,7 @@ test("phone controls move and release; losing focus requires explicit resume", a
     rightBox.y + rightBox.height / 2,
   );
   await page.mouse.down();
-  await page.waitForTimeout(1400);
+  await page.waitForTimeout(1950);
   await page.mouse.up();
   const up = page.getByRole("button", { name: "向上移动" });
   const upBox = (await up.boundingBox())!;
@@ -370,9 +370,9 @@ test("phone controls move and release; losing focus requires explicit resume", a
   await page.getByRole("button", { name: /翻开日记/ }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.getByRole("button", { name: "关闭回忆" }).click();
-  const before = await page.locator("canvas").screenshot();
+  const before = await playerPosition(page);
   await page.waitForTimeout(250);
-  expect(await page.locator("canvas").screenshot()).toEqual(before);
+  expect(await playerPosition(page)).toEqual(before);
   await page.evaluate(() => window.dispatchEvent(new Event("blur")));
   await expect(page.getByRole("button", { name: "继续探索" })).toBeVisible();
   await page.getByRole("button", { name: "继续探索" }).click();
