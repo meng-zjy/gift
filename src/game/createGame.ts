@@ -139,6 +139,10 @@ class WorldScene extends Phaser.Scene {
       this.bridge.onStory(action.storyId);
       return;
     }
+    if (action.type === "collection") {
+      this.bridge.onCollection(action.collection);
+      return;
+    }
     this.room = rooms[action.roomId];
     this.position = { ...this.room.entrances[action.spawnId] };
     this.facing = "down";

@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { stories } from "../content/world";
+import type { Story } from "../game/types";
 
 export const READING_KEY = "our-little-world:reading:v1";
 export type ReadingStatus = "opened" | "skipped" | "completed";
@@ -15,7 +16,10 @@ export interface ReadingSession {
 }
 
 /** Treat local saves as untrusted and drop obsolete content references. */
-export function parseReadingProgress(raw: string | null): ReadingProgress {
+export function parseReadingProgress(
+  raw: string | null,
+  catalog: Record<string, Story> = stories,
+): ReadingProgress {
   try {
     const saved = JSON.parse(raw ?? "null");
     if (
@@ -28,7 +32,7 @@ export function parseReadingProgress(raw: string | null): ReadingProgress {
     for (const [id, entry] of Object.entries(saved.entries)) {
       const candidate = entry as ReadingEntry;
       if (
-        !stories[id] ||
+        !catalog[id] ||
         !candidate ||
         !Number.isInteger(candidate.step) ||
         !["opened", "skipped", "completed"].includes(candidate.status)
@@ -37,7 +41,7 @@ export function parseReadingProgress(raw: string | null): ReadingProgress {
       entries[id] = {
         step: Math.max(
           0,
-          Math.min(candidate.step, stories[id].paragraphs.length - 1),
+          Math.min(candidate.step, catalog[id].paragraphs.length - 1),
         ),
         status: candidate.status,
       };
@@ -49,16 +53,19 @@ export function parseReadingProgress(raw: string | null): ReadingProgress {
 }
 
 /** Replay is a separate session: it must never overwrite the original reading cursor. */
-export function useStoryBook() {
+export function useStoryBook(catalog: Record<string, Story> = stories) {
   const [progress, setProgress] = useState<ReadingProgress>(() => {
     try {
-      return parseReadingProgress(localStorage.getItem(READING_KEY));
+      return parseReadingProgress(localStorage.getItem(READING_KEY), catalog);
     } catch {
       return {};
     }
   });
   const [session, setSession] = useState<ReadingSession | null>(null);
   const [storageFailed, setStorageFailed] = useState(false);
+  useEffect(() => {
+    if (session && !catalog[session.storyId]) setSession(null);
+  }, [catalog, session]);
 
   function save(id: string, entry: ReadingEntry) {
     const next = { ...progress, [id]: entry };
@@ -75,7 +82,7 @@ export function useStoryBook() {
   }
 
   function open(id: string, fromStart = false) {
-    if (!stories[id]) return;
+    if (!catalog[id]) return;
     const previous = progress[id];
     const replay = Boolean(
       previous && (fromStart || previous.status === "completed"),
@@ -90,7 +97,7 @@ export function useStoryBook() {
     if (!session) return;
     const bounded = Math.max(
       0,
-      Math.min(step, stories[session.storyId].paragraphs.length - 1),
+      Math.min(step, catalog[session.storyId].paragraphs.length - 1),
     );
     if (!session.replay)
       save(session.storyId, { step: bounded, status: "opened" });

@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { rooms, stories } from "../content/world";
+import { rooms } from "../content/world";
+import type { buildCatalog } from "../memories/catalog";
+import type { MemoryKind } from "../memories/model";
+import { MemoryCollection } from "./MemoryCollection";
 import type { Direction, GameBridge } from "../game/types";
 import { MemoryLibrary } from "./MemoryLibrary";
 import { StoryReader } from "./StoryReader";
@@ -12,16 +15,24 @@ const directions: { direction: Direction; label: string; symbol: string }[] = [
   { direction: "right", label: "向右移动", symbol: "→" },
 ];
 
-export function App() {
+export function App({
+  catalog,
+  contentError,
+}: {
+  catalog: ReturnType<typeof buildCatalog>;
+  contentError: string;
+}) {
+  const stories = catalog.stories;
   const host = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [nearby, setNearby] = useState<string | null>(null);
   const [roomId, setRoomId] = useState("living-room");
   const [libraryOpen, setLibraryOpen] = useState(false);
+  const [collection, setCollection] = useState<MemoryKind | null>(null);
   const [backgroundPaused, setBackgroundPaused] = useState(false);
   const openingChecked = useRef(false);
-  const book = useStoryBook();
+  const book = useStoryBook(stories);
   const room = rooms[roomId];
   const bridge = useRef<GameBridge>({
     paused: true,
@@ -30,6 +41,7 @@ export function App() {
     onReady: () => setReady(true),
     onNearby: setNearby,
     onStory: () => {},
+    onCollection: () => {},
     onRoom: setRoomId,
   });
 
@@ -42,15 +54,30 @@ export function App() {
     clearInput();
     bridge.current.paused = true;
     setLibraryOpen(false);
+    setCollection(null);
     book.open(id, fromStart);
   }
   // Callbacks must see current reading state; the Phaser instance remains stable.
   bridge.current.onStory = (id) => openStory(id);
+  bridge.current.onCollection = (kind) => {
+    const ids = catalog.collections[kind];
+    if (ids.length === 1) {
+      openStory(ids[0]);
+      return;
+    }
+    clearInput();
+    bridge.current.paused = true;
+    setCollection(kind);
+  };
 
   useEffect(() => {
     bridge.current.paused =
-      !ready || Boolean(book.session) || libraryOpen || backgroundPaused;
-  }, [ready, book.session, libraryOpen, backgroundPaused]);
+      !ready ||
+      Boolean(book.session) ||
+      libraryOpen ||
+      Boolean(collection) ||
+      backgroundPaused;
+  }, [ready, book.session, libraryOpen, collection, backgroundPaused]);
 
   useEffect(() => {
     let disposed = false;
@@ -98,7 +125,11 @@ export function App() {
   }
 
   const controlsDisabled =
-    !ready || backgroundPaused || Boolean(book.session) || libraryOpen;
+    !ready ||
+    backgroundPaused ||
+    Boolean(book.session) ||
+    libraryOpen ||
+    Boolean(collection);
 
   return (
     <div className="app-shell">
@@ -109,9 +140,14 @@ export function App() {
           </span>{" "}
           我们的小小世界
         </a>
-        <span className="version-tag">
-          <span /> 今天也一起，慢慢来
-        </span>
+        <div className="header-actions">
+          <span className="version-tag">
+            <span /> 今天也一起，慢慢来
+          </span>
+          <a className="manage-link" href="#manage">
+            手账台 ↗
+          </a>
+        </div>
       </header>
       <main id="home">
         <section className="game-section" aria-label="小屋探索">
@@ -130,7 +166,7 @@ export function App() {
             </div>
             <button
               className="library-button"
-              disabled={!ready || Boolean(book.session)}
+              disabled={!ready || Boolean(book.session) || Boolean(collection)}
               onClick={() => {
                 clearInput();
                 bridge.current.paused = true;
@@ -153,17 +189,21 @@ export function App() {
                 <button onClick={() => location.reload()}>重新打开</button>
               </div>
             )}
-            {backgroundPaused && ready && !book.session && !libraryOpen && (
-              <div className="game-message pause-message">
-                <span>小屋在等你</span>
-                <button
-                  className="primary-button"
-                  onClick={() => setBackgroundPaused(false)}
-                >
-                  继续探索 →
-                </button>
-              </div>
-            )}
+            {backgroundPaused &&
+              ready &&
+              !book.session &&
+              !libraryOpen &&
+              !collection && (
+                <div className="game-message pause-message">
+                  <span>小屋在等你</span>
+                  <button
+                    className="primary-button"
+                    onClick={() => setBackgroundPaused(false)}
+                  >
+                    继续探索 →
+                  </button>
+                </div>
+              )}
             {ready && !backgroundPaused && (
               <span className="room-stamp">HOME SWEET HOME</span>
             )}
@@ -235,9 +275,15 @@ export function App() {
               浏览器暂时无法保存阅读进度，本次仍可继续。请允许网站存储后再次阅读以重试保存。
             </p>
           )}
+          {contentError && (
+            <p className="content-error" role="status">
+              本机回忆暂时无法载入，可继续体验演示。
+              <a href="#manage">到手账台重试</a>
+            </p>
+          )}
         </section>
       </main>
-      {book.session && (
+      {book.session && stories[book.session.storyId] && (
         <StoryReader
           key={book.session.storyId}
           story={stories[book.session.storyId]}
@@ -248,8 +294,18 @@ export function App() {
           onClose={closeStory}
         />
       )}
+      {collection && (
+        <MemoryCollection
+          kind={collection}
+          ids={catalog.collections[collection]}
+          stories={stories}
+          onOpen={openStory}
+          onClose={() => setCollection(null)}
+        />
+      )}
       {libraryOpen && (
         <MemoryLibrary
+          catalog={stories}
           progress={book.progress}
           onOpen={openStory}
           onClose={() => setLibraryOpen(false)}

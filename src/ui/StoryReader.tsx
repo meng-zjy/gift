@@ -20,6 +20,7 @@ const labels = {
   collection: "冰箱里的偏爱",
   dessert: "今日份的甜",
   gallery: "小屋画廊",
+  album: "我们去过的地方",
 };
 
 export function StoryReader({
@@ -81,6 +82,9 @@ export function StoryReader({
           </div>
         )}
         <h2 id="story-title">{story.title}</h2>
+        {story.id.startsWith("memory:") && (
+          <p className="memory-meta">{story.speaker}</p>
+        )}
         {story.kind === "intro" && (
           <div className="opening-vignette" aria-hidden="true">
             <span>✦</span>
@@ -88,7 +92,21 @@ export function StoryReader({
             <span>✧</span>
           </div>
         )}
-        {story.kind === "gallery" && artwork ? (
+        {story.kind === "album" && story.photos?.[session.step] ? (
+          <div className="album-page">
+            <figure>
+              <img
+                src={story.photos[session.step].url}
+                alt={
+                  story.photos[session.step].caption ||
+                  `${story.title}，第 ${session.step + 1} 张照片`
+                }
+              />
+              <figcaption>{story.paragraphs[session.step]}</figcaption>
+            </figure>
+            {story.note && <p className="album-note">{story.note}</p>}
+          </div>
+        ) : story.kind === "gallery" && artwork ? (
           <div className="artwork-viewer">
             <figure>
               <img
@@ -167,7 +185,12 @@ export function StoryReader({
             disabled={backgroundPaused || session.step === 0}
             onClick={() => onMove(session.step - 1)}
           >
-            ← {story.kind === "gallery" ? "上一幅" : "上一段"}
+            ←{" "}
+            {story.kind === "gallery"
+              ? "上一幅"
+              : story.kind === "album"
+                ? "上一张"
+                : "上一段"}
           </button>
           <span className="page-number">
             {session.step + 1} / {story.paragraphs.length}
@@ -181,7 +204,9 @@ export function StoryReader({
               ? "读完，回到小屋 →"
               : story.kind === "gallery"
                 ? "下一幅 →"
-                : "下一段 →"}
+                : story.kind === "album"
+                  ? "下一张 →"
+                  : "下一段 →"}
           </button>
         </div>
         <div className="story-tools">

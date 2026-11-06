@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { stories } from "../content/world";
 import type { ReadingProgress } from "./useStoryBook";
+import type { Story } from "../game/types";
 
 const statusLabels = {
   opened: "未读完",
@@ -13,11 +14,13 @@ export function MemoryLibrary({
   onOpen,
   onClose,
   onReset,
+  catalog = stories,
 }: {
   progress: ReadingProgress;
   onOpen: (id: string, fromStart: boolean) => void;
   onClose: () => void;
   onReset: () => boolean;
+  catalog?: Record<string, Story>;
 }) {
   const [confirmReset, setConfirmReset] = useState(false);
   const [resetFailed, setResetFailed] = useState(false);
@@ -26,7 +29,7 @@ export function MemoryLibrary({
     dialog.current?.showModal();
     return () => dialog.current?.close();
   }, []);
-  const discovered = Object.entries(progress).filter(([id]) => stories[id]);
+  const discovered = Object.entries(progress).filter(([id]) => catalog[id]);
   return (
     <dialog
       ref={dialog}
@@ -56,7 +59,7 @@ export function MemoryLibrary({
           {discovered.map(([id, entry]) => (
             <article key={id}>
               <div>
-                <h3>{stories[id].title}</h3>
+                <h3>{catalog[id].title}</h3>
                 <span>
                   {statusLabels[entry.status]} · 停在第 {entry.step + 1} 段
                 </span>

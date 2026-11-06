@@ -11,13 +11,24 @@ export interface Bounds extends Point {
 
 export type ArtworkId = "monet-water-lilies" | "van-gogh-bedroom";
 
+export type CollectionKind = "diary" | "words" | "album";
+
 export interface Story {
   id: string;
   title: string;
-  kind: "memory" | "dialogue" | "intro" | "collection" | "dessert" | "gallery";
+  kind:
+    | "memory"
+    | "dialogue"
+    | "intro"
+    | "collection"
+    | "dessert"
+    | "gallery"
+    | "album";
   speaker: string;
   paragraphs: string[];
   artworkId?: ArtworkId;
+  photos?: { url: string; caption: string }[];
+  note?: string;
 }
 
 export interface Furniture extends Bounds {
@@ -48,6 +59,7 @@ export interface Furniture extends Bounds {
 
 export type InteractionAction =
   | { type: "story"; storyId: string }
+  | { type: "collection"; collection: CollectionKind }
   | { type: "travel"; roomId: string; spawnId: string };
 
 export interface RoomDefinition {
@@ -71,5 +83,6 @@ export interface GameBridge {
   onReady: () => void;
   onNearby: (label: string | null) => void;
   onStory: (storyId: string) => void;
+  onCollection: (collection: CollectionKind) => void;
   onRoom: (roomId: string) => void;
 }

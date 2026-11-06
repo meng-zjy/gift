@@ -63,10 +63,21 @@ export const livingRoom: RoomDefinition = {
       height: 42,
       interaction: {
         label: "翻开日记",
-        action: { type: "story", storyId: "first-page" },
+        action: { type: "collection", collection: "diary" },
       },
     },
-    { id: "bookshelf", kind: "shelf", x: 200, y: 114, width: 60, height: 26 },
+    {
+      id: "bookshelf",
+      kind: "shelf",
+      x: 200,
+      y: 114,
+      width: 60,
+      height: 26,
+      interaction: {
+        label: "翻翻出游相册",
+        action: { type: "collection", collection: "album" },
+      },
+    },
     { id: "left-plant", kind: "plant", x: 42, y: 238, width: 25, height: 29 },
     { id: "right-plant", kind: "plant", x: 417, y: 238, width: 25, height: 29 },
     {
@@ -78,7 +89,7 @@ export const livingRoom: RoomDefinition = {
       height: 20,
       interaction: {
         label: "和小人说说话",
-        action: { type: "story", storyId: "welcome-home" },
+        action: { type: "collection", collection: "words" },
       },
     },
     {
