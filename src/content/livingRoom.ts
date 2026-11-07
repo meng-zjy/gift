@@ -18,7 +18,7 @@ export const stories: Record<string, Story> = {
     title: "你来啦。",
     speaker: "屋里的另一个小人 · 演示对白",
     paragraphs: [
-      "二楼卧室的日记本，是留给你的。右上方的楼梯能走上去，过道还有我们的照片墙。",
+      "二楼卧室的日记本，是留给你的。右下角的楼梯能走上去，过道还有我们的照片墙。",
       "你慢慢逛，我就在这里。以后这间小屋，会装下越来越多我们的故事。",
     ],
   },
@@ -36,20 +36,20 @@ export const livingRoom: RoomDefinition = {
   spawn: { x: 240, y: 252 },
   entrances: {
     "from-kitchen": { x: 420, y: 220 },
-    "from-upstairs": { x: 322, y: 166 },
-    "from-basement": { x: 162, y: 246 },
+    "from-upstairs": { x: 354, y: 272 },
+    "from-basement": { x: 130, y: 246 },
   },
   stairs: [
     {
       id: "living-upstairs",
-      entry: { x: 342, y: 166 },
-      exit: { x: 438, y: 126 },
+      entry: { x: 374, y: 272 },
+      exit: { x: 438, y: 248 },
       direction: "up",
       destination: { roomId: "upper-hall", spawnId: "from-living" },
     },
     {
       id: "living-basement",
-      entry: { x: 142, y: 246 },
+      entry: { x: 110, y: 246 },
       exit: { x: 46, y: 272 },
       direction: "down",
       destination: { roomId: "achievement-hall", spawnId: "from-living" },
@@ -81,7 +81,7 @@ export const livingRoom: RoomDefinition = {
       height: 26,
     },
     { id: "left-plant", kind: "plant", x: 34, y: 170, width: 25, height: 29 },
-    { id: "right-plant", kind: "plant", x: 417, y: 238, width: 25, height: 29 },
+    { id: "right-plant", kind: "plant", x: 290, y: 114, width: 25, height: 29 },
     {
       id: "companion",
       kind: "npc",

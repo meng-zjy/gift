@@ -67,13 +67,13 @@ export async function walkToRoom(page: Page, key: string, name: string) {
   }
 }
 export async function goUpstairs(page: Page) {
-  await walkTo(page, "d", "x", 322);
-  await walkTo(page, "w", "y", 166);
+  await walkTo(page, "d", "x", 354);
+  await walkTo(page, "s", "y", 272);
   await walkToRoom(page, "d", "二楼过道");
 }
 export async function goBedroom(page: Page) {
   await goUpstairs(page);
-  await walkTo(page, "s", "y", 210);
+  await walkTo(page, "w", "y", 210);
   await walkTo(page, "d", "x", 430);
   await expect(page.getByRole("button", { name: /去卧室/ })).toBeEnabled();
   await page.keyboard.press("e");
@@ -86,7 +86,7 @@ export async function approachDiary(page: Page) {
 }
 export async function approachPhotoBoard(page: Page) {
   await goUpstairs(page);
-  await walkTo(page, "s", "y", 210);
+  await walkTo(page, "w", "y", 210);
   await walkTo(page, "d", "x", 280);
   await walkTo(page, "w", "y", 175);
   await expect(
@@ -98,7 +98,7 @@ export async function goBasement(page: Page) {
   await walkToRoom(page, "a", "成就长廊");
 }
 export async function openAchievementDisplay(page: Page) {
-  await walkTo(page, "s", "y", 210);
+  await walkTo(page, "w", "y", 210);
   await walkTo(page, "d", "x", 270);
   await walkTo(page, "w", "y", 173);
   await expect(

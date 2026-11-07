@@ -6,6 +6,7 @@ import {
   stairProgress,
   stairY,
   STAIR_LANE_HALF_WIDTH,
+  MIN_STAIR_RUN,
 } from "./stairs";
 
 /** Validate cross-room references before creating scenes, so expansion fails visibly. */
@@ -39,7 +40,7 @@ export function validateWorld(
         ![stair.entry.x, stair.entry.y, stair.exit.x, stair.exit.y].every(
           Number.isFinite,
         ) ||
-        Math.abs(stair.exit.x - stair.entry.x) < 72 ||
+        Math.abs(stair.exit.x - stair.entry.x) < MIN_STAIR_RUN ||
         (stair.direction === "up"
           ? stair.entry.y - stair.exit.y
           : stair.exit.y - stair.entry.y) < 24

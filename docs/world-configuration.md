@@ -66,9 +66,9 @@ interaction: {
 
 配置校验覆盖：房间 ID、固定画布规格、物件 ID 重复、故事引用、门的目标入口、入口可通行性及非空故事。配置错误会阻止游戏初始化并显示重试界面，开发者应查看终端与配置测试获得具体原因。
 
-## 楼梯与成就扩展（v0.5.2 更新）
+## 楼梯与成就扩展（v0.5.3 更新）
 
-房间 `stairs` 数组配置独立 ID、方向 `up/down`、开放端 `entry: { x, y }`、末端 `exit: { x, y }` 及 `destination: { roomId, spawnId }`。踏面与连续坡线碰撞由入口与出口推导，美术台阶不再逐级生成矩形碰撞；横向跨度至少 72，屏幕纵向高差至少 24，up 的出口 Y 更小、down 更大。沿斜向通道行走到末端触发换层，保持固定图层，不添加高度轴。房间出生点必须避开末端触发区与护栏，开放端留出角色通道；布局调整后需验证实际往返，不能只检查目标引用。v0.5.2 的配置校验检查中线与两侧边缘的完整上楼通路，测试另外覆盖退回；半宽由 `STAIR_LANE_HALF_WIDTH` 统一定义。楼梯布局与碰撞修复见 [v0.5.2 记录](./stair-layout-and-collision.md)。旧版矩形楼梯配置已替换，详见 [横向侧面楼梯](./side-staircases.md)。
+房间 `stairs` 数组配置独立 ID、方向 `up/down`、开放端 `entry: { x, y }`、末端 `exit: { x, y }` 及 `destination: { roomId, spawnId }`。踏面与连续坡线碰撞由入口与出口推导，美术台阶不再逐级生成矩形碰撞；横向跨度至少 `MIN_STAIR_RUN`（56），当前紧凑楼梯使用 64，屏幕纵向高差至少 24，up 的出口 Y 更小、down 更大。沿斜向通道行走到末端触发换层，保持固定图层，不添加高度轴。房间出生点必须避开末端触发区与护栏，开放端留出角色通道；布局调整后需验证实际往返，不能只检查目标引用。v0.5.2 的配置校验检查中线与两侧边缘的完整上楼通路，测试另外覆盖退回；半宽由 `STAIR_LANE_HALF_WIDTH` 统一定义。楼梯布局与碰撞修复见 [v0.5.2 / v0.5.3 记录](./stair-layout-and-collision.md)。旧版矩形楼梯配置已替换，详见 [横向侧面楼梯](./side-staircases.md)。
 
 家具 `photo-board` 配合 album collection 打开展板；`achievement-wall` 配合 `{ type: "achievements" }` 打开成就长廊。当前主题增加 hallway、achievements。探索定义在 `src/achievements/definitions.ts`，房间条件使用固定 ID 列表，扩建不会改动旧徽章条件。
 

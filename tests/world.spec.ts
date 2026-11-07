@@ -58,18 +58,18 @@ test("stair destinations, landings and arrival positions reject invalid expansio
   missing["living-room"].stairs![0].destination.spawnId = "missing";
   expect(() => validateWorld(missing, stories)).toThrow("目标入口不存在");
   const landing = structuredClone(rooms);
-  landing["living-room"].stairs![0].exit.x = 342;
+  landing["living-room"].stairs![0].exit.x = 374;
   expect(() => validateWorld(landing, stories)).toThrow("平台配置无效");
   const arrival = structuredClone(rooms);
-  arrival["living-room"].entrances["from-upstairs"] = { x: 432, y: 129 };
+  arrival["living-room"].entrances["from-upstairs"] = { x: 435, y: 249 };
   expect(() => validateWorld(arrival, stories)).toThrow("入口位于楼梯触发区");
 
   const obstructed = structuredClone(rooms);
   obstructed["living-room"].furniture.push({
     id: "stair-obstruction",
     kind: "shelf",
-    x: 382,
-    y: 143,
+    x: 404,
+    y: 258,
     width: 8,
     height: 8,
   });

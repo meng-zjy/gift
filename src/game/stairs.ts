@@ -1,6 +1,8 @@
 import type { Bounds, Point, RoomDefinition, Staircase } from "./types";
 
 export const STAIR_LANE_HALF_WIDTH = 12;
+// Six readable treads still leave room for a full-width approach in a corner bay.
+export const MIN_STAIR_RUN = 56;
 
 export function stairProgress(stair: Staircase, point: Point): number {
   return (point.x - stair.entry.x) / (stair.exit.x - stair.entry.x);
@@ -14,9 +16,13 @@ export function stairY(stair: Staircase, x: number): number {
 /** Steps are decorative; collision follows the continuous incline, avoiding sawtooth snags. */
 export function stairSteps(stair: Staircase) {
   const left = Math.min(stair.entry.x, stair.exit.x);
-  const width = Math.abs(stair.exit.x - stair.entry.x) / 8;
+  const count = Math.max(
+    6,
+    Math.ceil(Math.abs(stair.exit.x - stair.entry.x) / 12),
+  );
+  const width = Math.abs(stair.exit.x - stair.entry.x) / count;
   const baseY = Math.max(stair.entry.y, stair.exit.y) + 18;
-  return Array.from({ length: 8 }, (_, index) => ({
+  return Array.from({ length: count }, (_, index) => ({
     x: left + index * width,
     y: stairY(stair, left + (index + 0.5) * width),
     width,

@@ -3,7 +3,12 @@ import { livingRoom } from "../src/content/livingRoom";
 import { movePlayer } from "../src/game/movement";
 import { rooms } from "../src/content/world";
 import { findNearby } from "../src/game/interaction";
-import { arrivingStair, stairAt, stairProgress } from "../src/game/stairs";
+import {
+  arrivingStair,
+  stairAt,
+  stairProgress,
+  stairY,
+} from "../src/game/stairs";
 
 test("every accepted stair lane reaches the landing and can retreat without edge snags", () => {
   for (const room of Object.values(rooms)) {
@@ -46,7 +51,7 @@ test("every accepted stair lane reaches the landing and can retreat without edge
 });
 
 test("walls stop a player even across a long movement interval", () => {
-  const next = movePlayer({ x: 240, y: 280 }, { x: 100, y: 0 }, 10, livingRoom);
+  const next = movePlayer({ x: 240, y: 210 }, { x: 100, y: 0 }, 10, livingRoom);
   expect(next.x).toBeLessThanOrEqual(446);
   expect(next.x).toBeGreaterThan(440);
 });
@@ -91,6 +96,19 @@ test("corner stairs leave the living room's cross-room route open", () => {
   expect(left.y).toBe(210);
 });
 
+test("the kitchen approach stays open along the right wall above the corner stairs", () => {
+  const bottom = movePlayer(
+    { x: 420, y: 95 },
+    { x: 0, y: 90 },
+    125 / 90,
+    livingRoom,
+  );
+  expect(bottom.y).toBeCloseTo(220);
+  expect(bottom.x).toBe(420);
+  const top = movePlayer(bottom, { x: 0, y: -90 }, 125 / 90, livingRoom);
+  expect(top.y).toBeCloseTo(95);
+});
+
 test("each side of the fridge, diary and cake offers an interaction without requiring a facing", () => {
   for (const [room, id] of [
     [rooms.bedroom, "diary-desk"],
@@ -108,32 +126,43 @@ test("each side of the fridge, diary and cake offers an interaction without requ
   }
 });
 
-test("side stairs lift the actual walking path, allow retreat and block crossing the rail or support", () => {
+test("side stairs lift the actual walking path, allow retreat and block crossing the rail", () => {
   const stair = livingRoom.stairs![0];
   const halfway = movePlayer(
-    { x: 322, y: 166 },
+    { x: stair.entry.x - 20, y: stair.entry.y },
     { x: 90, y: 0 },
     0.8,
     livingRoom,
   );
-  expect(halfway.x).toBeGreaterThan(366);
-  expect(halfway.y).toBeLessThan(160);
+  expect(stairProgress(stair, halfway)).toBeGreaterThan(0.3);
+  expect(halfway.y).toBeLessThan(stair.entry.y);
   expect(stairAt(halfway, livingRoom)?.id).toBe(stair.id);
   expect(arrivingStair(stair.entry, halfway, livingRoom)).toBeUndefined();
   const returned = movePlayer(halfway, { x: -90, y: 0 }, 1, livingRoom);
-  expect(returned.x).toBeLessThan(342);
-  expect(Math.abs(returned.y - 166)).toBeLessThan(3);
-  const above = movePlayer({ x: 390, y: 90 }, { x: 0, y: 90 }, 1.5, livingRoom);
-  expect(above.y).toBeLessThan(130);
-  expect(stairAt(above, livingRoom)).toBeUndefined();
-  const below = movePlayer({ x: 390, y: 230 }, { x: 0, y: -90 }, 1, livingRoom);
-  expect(below.y).toBeGreaterThanOrEqual(194);
-  expect(arrivingStair(halfway, { x: 432, y: 129 }, livingRoom)?.id).toBe(
-    stair.id,
+  expect(returned.x).toBeLessThan(stair.entry.x);
+  expect(Math.abs(returned.y - stair.entry.y)).toBeLessThan(3);
+  const middleX = (stair.entry.x + stair.exit.x) / 2;
+  const above = movePlayer(
+    { x: middleX, y: stair.entry.y - 64 },
+    { x: 0, y: 90 },
+    1.5,
+    livingRoom,
   );
-  expect(
-    arrivingStair({ x: 432, y: 129 }, { x: 432, y: 129 }, livingRoom),
-  ).toBeUndefined();
+  expect(above.y).toBeLessThan(stairY(stair, middleX) - 12);
+  expect(stairAt(above, livingRoom)).toBeUndefined();
+  const closedEdge = movePlayer(
+    { x: stair.entry.x - 20, y: stair.entry.y - 20 },
+    { x: 90, y: 0 },
+    1,
+    livingRoom,
+  );
+  expect(closedEdge.x).toBeLessThan(stair.entry.x);
+  const landing = {
+    x: stair.entry.x + (stair.exit.x - stair.entry.x) * 0.95,
+    y: stairY(stair, stair.entry.x + (stair.exit.x - stair.entry.x) * 0.95),
+  };
+  expect(arrivingStair(halfway, landing, livingRoom)?.id).toBe(stair.id);
+  expect(arrivingStair(landing, landing, livingRoom)).toBeUndefined();
 });
 
 test("every configured staircase moves along its incline in both directions", () => {
