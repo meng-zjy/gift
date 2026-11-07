@@ -9,13 +9,13 @@ export const achievementHall: RoomDefinition = {
   width: 480,
   height: 320,
   walkable: { x: 28, y: 82, width: 424, height: 208 },
-  spawn: { x: 196, y: 190 },
-  entrances: { "from-living": { x: 196, y: 190 } },
+  spawn: { x: 162, y: 166 },
+  entrances: { "from-living": { x: 162, y: 166 } },
   stairs: [
     {
       id: "basement-upstairs",
-      entry: { x: 176, y: 190 },
-      exit: { x: 48, y: 126 },
+      entry: { x: 142, y: 166 },
+      exit: { x: 46, y: 126 },
       direction: "up",
       destination: { roomId: "living-room", spawnId: "from-basement" },
     },

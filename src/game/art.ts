@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import type { Furniture, RoomDefinition, Staircase } from "./types";
 import { artworks } from "../content/artworks";
-import { stairSteps, stairRails, stairProgress } from "./stairs";
+import { stairSteps, stairProgress, stairY } from "./stairs";
 
 const colors = {
   outline: 0x394554,
@@ -207,7 +207,7 @@ function drawWalls(
   }
 }
 
-/** Side-facing stair silhouettes: the visible tread line is also the movement path. */
+/** A compact built-in timber stairwell, with a continuous rail and a recessed end doorway. */
 function drawStairs(scene: Phaser.Scene, stair: Staircase): void {
   const brush = scene.add.graphics().setDepth(1);
   const rect = (
@@ -229,48 +229,65 @@ function drawStairs(scene: Phaser.Scene, stair: Staircase): void {
   const left = steps[0].x;
   const right = steps.at(-1)!.x + steps.at(-1)!.width;
   const baseY = steps[0].baseY;
-  // A recessed dark opening makes a descending flight read differently from raised timber.
-  brush.fillStyle(stair.direction === "down" ? 0x253b40 : 0x88715b);
-  brush.fillPoints(
+  const polygon = (points: { x: number; y: number }[], color: number) =>
+    brush.fillStyle(color).fillPoints(points, true);
+
+  // Wall-backed alcove: the room keeps its central floor instead of gaining a freestanding wedge.
+  polygon(
     [
-      { x: left - 5, y: steps[0].y - 15 },
-      ...steps.map((step) => ({ x: step.x + step.width, y: step.y - 15 })),
-      { x: right + 5, y: baseY + 4 },
-      { x: left - 5, y: baseY + 4 },
+      { x: left - 3, y: stairY(stair, left) - 25 },
+      { x: right + 3, y: stairY(stair, right) - 25 },
+      { x: right + 3, y: baseY + 4 },
+      { x: left - 3, y: baseY + 4 },
     ],
-    true,
+    0x6a796e,
   );
-  rect(left - 4, baseY + 2, right - left + 10, 4, 0x9c816d);
+  polygon(
+    [
+      { x: left, y: stairY(stair, left) + 12 },
+      { x: right, y: stairY(stair, right) + 12 },
+      { x: right, y: baseY + 1 },
+      { x: left, y: baseY + 1 },
+    ],
+    0x849885,
+  );
+  rect(left - 3, baseY + 2, right - left + 6, 3, 0x657263);
   for (const step of steps) {
     const progress = stairProgress(stair, {
       x: step.x + step.width / 2,
       y: step.y,
     });
-    const light = stair.direction === "up" ? 1 : 1 - progress * 0.42;
+    const light = stair.direction === "up" ? 1 : 1 - progress * 0.4;
     const tread = Phaser.Display.Color.GetColor(
-      Math.round(191 * light),
+      Math.round(199 * light),
       Math.round(165 * light),
-      Math.round(123 * light),
+      Math.round(119 * light),
     );
-    rect(
-      step.x,
-      step.y + 10,
-      step.width + 1,
-      baseY - step.y - 10,
-      stair.direction === "up" ? 0x85664c : 0x40504d,
-    );
-    rect(step.x, step.y - 12, step.width + 1, 24, tread);
-    rect(step.x, step.y - 12, step.width + 1, 2, 0xe1cda0);
-    rect(step.x, step.y + 10, step.width + 1, 3, 0x725a44);
-    rect(step.x, step.y + 13, 1, Math.max(0, baseY - step.y - 13), 0x6b5744);
-    rect(step.x + 4, step.y - 4, Math.max(2, step.width - 7), 1, 0xac8e64);
-    rect(step.x + 2, step.y - 20, 3, 11, 0x8a7153);
-    rect(step.x, step.y - 23, step.width + 1, 4, 0xb8a17a);
-    rect(step.x, step.y - 23, step.width + 1, 1, 0xe1cda0);
+    rect(step.x, step.y - 17, step.width + 1, 32, tread);
+    rect(step.x, step.y - 17, step.width + 1, 2, 0xe4c99b);
+    rect(step.x, step.y + 13, step.width + 1, 4, 0x806449);
+    rect(step.x + 2, step.y + 13, step.width - 3, 1, 0xc3a276);
+    rect(step.x + 3, step.y - 7, step.width - 5, 1, 0xb79669);
+    if (step.baseY - step.y > 28) {
+      rect(step.x + 3, step.y + 23, 1, step.baseY - step.y - 25, 0x718571);
+    }
   }
-  const endRail = stairRails(stair).at(-1)!;
-  rect(endRail.x, endRail.y, endRail.width, endRail.height, 0x8a7153);
-  rect(endRail.x, endRail.y, endRail.width + 1, 3, 0xd7c093);
+  // Pixel-continuous banister follows the same slope as the walkable lane.
+  for (let x = left; x <= right; x++) {
+    const y = stairY(stair, x);
+    rect(x, y - 23, 1, 4, 0x8c704f);
+    rect(x, y - 24, 1, 1, 0xe3c99c);
+  }
+  for (const progress of [0, 0.5, 1]) {
+    const x = stair.entry.x + (stair.exit.x - stair.entry.x) * progress;
+    rect(x - 1, stairY(stair, x) - 20, 3, 6, 0x937651);
+    rect(x - 2, stairY(stair, x) - 25, 5, 3, 0xe0c393);
+  }
+  const endX = stair.exit.x + (stair.exit.x > stair.entry.x ? 6 : -10);
+  rect(endX - 2, stair.exit.y - 26, 8, 47, 0x53645d);
+  rect(endX, stair.exit.y - 24, 4, 43, 0x354840);
+  rect(endX - 2, stair.exit.y - 26, 2, 47, 0xb59b73);
+  rect(endX - 3, stair.exit.y - 27, 10, 3, 0xd3bb92);
 }
 
 function drawFurniture(scene: Phaser.Scene, item: Furniture): void {

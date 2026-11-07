@@ -9,16 +9,16 @@ export const upperHall: RoomDefinition = {
   width: 480,
   height: 320,
   walkable: { x: 28, y: 82, width: 424, height: 208 },
-  spawn: { x: 190, y: 142 },
+  spawn: { x: 162, y: 126 },
   entrances: {
-    "from-living": { x: 190, y: 142 },
+    "from-living": { x: 162, y: 126 },
     "from-bedroom": { x: 420, y: 210 },
   },
   stairs: [
     {
       id: "hall-downstairs",
-      entry: { x: 170, y: 142 },
-      exit: { x: 42, y: 202 },
+      entry: { x: 142, y: 126 },
+      exit: { x: 46, y: 166 },
       direction: "down",
       destination: { roomId: "living-room", spawnId: "from-upstairs" },
     },

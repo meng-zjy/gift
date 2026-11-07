@@ -1,5 +1,11 @@
 import type { Bounds, Point, RoomDefinition } from "./types";
-import { roomObstacles, stairAt, stairY } from "./stairs";
+import {
+  blockedByStairs,
+  enterStair,
+  roomObstacles,
+  stairAt,
+  stairY,
+} from "./stairs";
 
 export const PLAYER_HALF_SIZE = 6;
 
@@ -26,7 +32,9 @@ function canStand(position: Point, room: RoomDefinition): boolean {
     body.x + body.width <= floor.x + floor.width &&
     body.y + body.height <= floor.y + floor.height;
   return (
-    inside && !roomObstacles(room).some((obstacle) => overlaps(body, obstacle))
+    inside &&
+    !blockedByStairs(position, room) &&
+    !roomObstacles(room).some((obstacle) => overlaps(body, obstacle))
   );
 }
 
@@ -60,11 +68,15 @@ export function movePlayer(
       if (canStand(candidate, room)) Object.assign(next, candidate);
       continue;
     }
-    const horizontal = {
-      x: next.x + (velocity.x * seconds) / steps,
-      y: next.y,
-    };
-    if (canStand(horizontal, room)) next.x = horizontal.x;
+    const horizontal = enterStair(
+      next,
+      {
+        x: next.x + (velocity.x * seconds) / steps,
+        y: next.y,
+      },
+      room,
+    );
+    if (canStand(horizontal, room)) Object.assign(next, horizontal);
     const vertical = { x: next.x, y: next.y + (velocity.y * seconds) / steps };
     if (canStand(vertical, room)) next.y = vertical.y;
   }

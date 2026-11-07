@@ -67,7 +67,8 @@ export async function walkToRoom(page: Page, key: string, name: string) {
   }
 }
 export async function goUpstairs(page: Page) {
-  await walkTo(page, "w", "y", 190);
+  await walkTo(page, "d", "x", 322);
+  await walkTo(page, "w", "y", 166);
   await walkToRoom(page, "d", "二楼过道");
 }
 export async function goBedroom(page: Page) {
@@ -93,10 +94,11 @@ export async function approachPhotoBoard(page: Page) {
   ).toBeEnabled();
 }
 export async function goBasement(page: Page) {
-  await walkTo(page, "w", "y", 220);
+  await walkTo(page, "w", "y", 246);
   await walkToRoom(page, "a", "成就长廊");
 }
 export async function openAchievementDisplay(page: Page) {
+  await walkTo(page, "s", "y", 210);
   await walkTo(page, "d", "x", 270);
   await walkTo(page, "w", "y", 173);
   await expect(

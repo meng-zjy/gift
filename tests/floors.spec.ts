@@ -23,11 +23,12 @@ test("stairs allow turning back and pausing before the landing, then travel up a
   page,
 }) => {
   await enter(page);
-  await walkTo(page, "w", "y", 190);
-  await walkTo(page, "d", "x", 354);
+  await walkTo(page, "d", "x", 322);
+  await walkTo(page, "w", "y", 166);
+  await walkTo(page, "d", "x", 390);
   const [stepX, stepY] = (await playerPosition(page))!.split(",").map(Number);
-  expect(stepX).toBeGreaterThan(306);
-  expect(stepY).toBeLessThan(180);
+  expect(stepX).toBeGreaterThan(342);
+  expect(stepY).toBeLessThan(160);
   await page.screenshot({
     path: "test-results/side-stair-walking.png",
     fullPage: true,
@@ -37,7 +38,7 @@ test("stairs allow turning back and pausing before the landing, then travel up a
   await expectRoom(page, "客厅");
   await page.evaluate(() => window.dispatchEvent(new Event("blur")));
   await page.getByRole("button", { name: "继续探索" }).click();
-  await walkTo(page, "a", "x", 286);
+  await walkTo(page, "a", "x", 322);
   await expectRoom(page, "客厅");
   await walkToRoom(page, "d", "二楼过道");
   await expectRoom(page, "二楼过道");
@@ -48,7 +49,7 @@ test("stairs allow turning back and pausing before the landing, then travel up a
   });
   await walkTo(page, "a", "x", 110);
   const descendingY = Number((await playerPosition(page))!.split(",")[1]);
-  expect(descendingY).toBeGreaterThan(160);
+  expect(descendingY).toBeGreaterThan(135);
   await page.screenshot({
     path: "test-results/side-stair-descending.png",
     fullPage: true,
@@ -64,7 +65,8 @@ test("a single touch direction climbs the side staircase and releasing it does n
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await enter(page);
-  await walkTo(page, "w", "y", 190);
+  await walkTo(page, "d", "x", 322);
+  await walkTo(page, "w", "y", 166);
   const button = page.getByRole("button", { name: "向右移动" });
   const bounds = (await button.boundingBox())!;
   await page.mouse.move(
@@ -86,6 +88,22 @@ test("a single touch direction climbs the side staircase and releasing it does n
   });
 });
 
+test("keyboard walkers can use both edges of the stairs on consecutive round trips", async ({
+  page,
+}) => {
+  test.setTimeout(45000);
+  await enter(page);
+  await walkTo(page, "d", "x", 322);
+  await walkTo(page, "w", "y", 158);
+  await walkToRoom(page, "d", "二楼过道");
+  await walkTo(page, "s", "y", 134);
+  await walkToRoom(page, "a", "客厅");
+  await walkTo(page, "s", "y", 174);
+  await walkToRoom(page, "d", "二楼过道");
+  await walkTo(page, "w", "y", 118);
+  await walkToRoom(page, "a", "客厅");
+});
+
 test("basement achievements persist and the return staircase works with reduced motion", async ({
   page,
 }) => {
@@ -100,8 +118,8 @@ test("basement achievements persist and the return staircase works with reduced 
   await expect(page.getByText("待记录", { exact: true })).toHaveCount(3);
   await page.getByRole("button", { name: "关闭成就长廊" }).click();
   await walkTo(page, "s", "y", 220);
-  await walkTo(page, "a", "x", 196);
-  await walkTo(page, "w", "y", 190);
+  await walkTo(page, "a", "x", 162);
+  await walkTo(page, "w", "y", 166);
   await walkToRoom(page, "a", "客厅");
   await expectRoom(page, "客厅");
   const progress = await page.evaluate(() =>

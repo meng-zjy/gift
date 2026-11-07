@@ -36,21 +36,21 @@ export const livingRoom: RoomDefinition = {
   spawn: { x: 240, y: 252 },
   entrances: {
     "from-kitchen": { x: 420, y: 220 },
-    "from-upstairs": { x: 286, y: 190 },
-    "from-basement": { x: 196, y: 220 },
+    "from-upstairs": { x: 322, y: 166 },
+    "from-basement": { x: 162, y: 246 },
   },
   stairs: [
     {
       id: "living-upstairs",
-      entry: { x: 306, y: 190 },
+      entry: { x: 342, y: 166 },
       exit: { x: 438, y: 126 },
       direction: "up",
       destination: { roomId: "upper-hall", spawnId: "from-living" },
     },
     {
       id: "living-basement",
-      entry: { x: 176, y: 220 },
-      exit: { x: 48, y: 270 },
+      entry: { x: 142, y: 246 },
+      exit: { x: 46, y: 272 },
       direction: "down",
       destination: { roomId: "achievement-hall", spawnId: "from-living" },
     },
@@ -80,7 +80,7 @@ export const livingRoom: RoomDefinition = {
       width: 60,
       height: 26,
     },
-    { id: "left-plant", kind: "plant", x: 34, y: 183, width: 25, height: 29 },
+    { id: "left-plant", kind: "plant", x: 34, y: 170, width: 25, height: 29 },
     { id: "right-plant", kind: "plant", x: 417, y: 238, width: 25, height: 29 },
     {
       id: "companion",

@@ -1,7 +1,12 @@
 import { PLAYER_HALF_SIZE, movePlayer } from "./movement";
 import type { Point, RoomDefinition, Story } from "./types";
 import { artworks } from "../content/artworks";
-import { onStairLanding, stairY } from "./stairs";
+import {
+  onStairLanding,
+  stairProgress,
+  stairY,
+  STAIR_LANE_HALF_WIDTH,
+} from "./stairs";
 
 /** Validate cross-room references before creating scenes, so expansion fails visibly. */
 export function validateWorld(
@@ -51,6 +56,32 @@ export function validateWorld(
         },
         `楼梯 ${stair.id} 平台`,
       );
+      // Expansion must preserve the entire lane, including both edges and the approach.
+      const sign = Math.sign(stair.exit.x - stair.entry.x);
+      const travelFrames = Math.ceil(
+        ((Math.hypot(
+          stair.exit.x - stair.entry.x,
+          stair.exit.y - stair.entry.y,
+        ) +
+          36) /
+          90) *
+          60,
+      );
+      for (const offset of [-STAIR_LANE_HALF_WIDTH, 0, STAIR_LANE_HALF_WIDTH]) {
+        let position = {
+          x: stair.entry.x - sign * 18,
+          y: stair.entry.y + offset,
+        };
+        for (
+          let frame = 0;
+          frame < travelFrames && stairProgress(stair, position) < 0.94;
+          frame++
+        ) {
+          position = movePlayer(position, { x: sign * 90, y: 0 }, 1 / 60, room);
+        }
+        if (stairProgress(stair, position) < 0.94)
+          throw new Error(`楼梯 ${stair.id} 的边缘通路不可通行`);
+      }
     }
     for (const item of room.furniture) {
       if (allIds.has(item.id)) throw new Error(`物件 ID 重复：${item.id}`);
