@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import type { Furniture, RoomDefinition, Staircase } from "./types";
 import { artworks } from "../content/artworks";
+import { stairSteps, stairRails, stairProgress } from "./stairs";
 
 const colors = {
   outline: 0x394554,
@@ -206,7 +207,7 @@ function drawWalls(
   }
 }
 
-/** Stairs are a flat walkable strip; rail pixels match the physics bounds exactly. */
+/** Side-facing stair silhouettes: the visible tread line is also the movement path. */
 function drawStairs(scene: Phaser.Scene, stair: Staircase): void {
   const brush = scene.add.graphics().setDepth(1);
   const rect = (
@@ -215,43 +216,61 @@ function drawStairs(scene: Phaser.Scene, stair: Staircase): void {
     width: number,
     height: number,
     color: number,
-  ) => brush.fillStyle(color).fillRect(x, y, width, height);
-  rect(stair.x, stair.y, stair.width, stair.height, 0x394e51);
-  for (let offset = 6; offset < stair.height - 6; offset += 9) {
-    const progress = offset / stair.height;
-    const light = stair.direction === "up" ? progress : 1 - progress;
-    const color = Phaser.Display.Color.GetColor(
-      98 + Math.round(light * 63),
-      100 + Math.round(light * 47),
-      86 + Math.round(light * 34),
+  ) =>
+    brush
+      .fillStyle(color)
+      .fillRect(
+        Math.round(x),
+        Math.round(y),
+        Math.ceil(width),
+        Math.ceil(height),
+      );
+  const steps = stairSteps(stair);
+  const left = steps[0].x;
+  const right = steps.at(-1)!.x + steps.at(-1)!.width;
+  const baseY = steps[0].baseY;
+  // A recessed dark opening makes a descending flight read differently from raised timber.
+  brush.fillStyle(stair.direction === "down" ? 0x253b40 : 0x88715b);
+  brush.fillPoints(
+    [
+      { x: left - 5, y: steps[0].y - 15 },
+      ...steps.map((step) => ({ x: step.x + step.width, y: step.y - 15 })),
+      { x: right + 5, y: baseY + 4 },
+      { x: left - 5, y: baseY + 4 },
+    ],
+    true,
+  );
+  rect(left - 4, baseY + 2, right - left + 10, 4, 0x9c816d);
+  for (const step of steps) {
+    const progress = stairProgress(stair, {
+      x: step.x + step.width / 2,
+      y: step.y,
+    });
+    const light = stair.direction === "up" ? 1 : 1 - progress * 0.42;
+    const tread = Phaser.Display.Color.GetColor(
+      Math.round(191 * light),
+      Math.round(165 * light),
+      Math.round(123 * light),
     );
-    rect(stair.x + 6, stair.y + offset, stair.width - 12, 8, color);
-    rect(stair.x + 7, stair.y + offset, stair.width - 14, 1, 0xd6c6a1);
+    rect(
+      step.x,
+      step.y + 10,
+      step.width + 1,
+      baseY - step.y - 10,
+      stair.direction === "up" ? 0x85664c : 0x40504d,
+    );
+    rect(step.x, step.y - 12, step.width + 1, 24, tread);
+    rect(step.x, step.y - 12, step.width + 1, 2, 0xe1cda0);
+    rect(step.x, step.y + 10, step.width + 1, 3, 0x725a44);
+    rect(step.x, step.y + 13, 1, Math.max(0, baseY - step.y - 13), 0x6b5744);
+    rect(step.x + 4, step.y - 4, Math.max(2, step.width - 7), 1, 0xac8e64);
+    rect(step.x + 2, step.y - 20, 3, 11, 0x8a7153);
+    rect(step.x, step.y - 23, step.width + 1, 4, 0xb8a17a);
+    rect(step.x, step.y - 23, step.width + 1, 1, 0xe1cda0);
   }
-  rect(stair.x, stair.y, 6, stair.height, 0x8c775f);
-  rect(stair.x + stair.width - 6, stair.y, 6, stair.height, 0x8c775f);
-  rect(stair.x + 1, stair.y, 2, stair.height, 0xc4ac85);
-  rect(stair.x + stair.width - 3, stair.y, 2, stair.height, 0xc4ac85);
-  const closedY =
-    stair.direction === "up" ? stair.y : stair.y + stair.height - 6;
-  rect(stair.x, closedY, stair.width, 6, 0x71644f);
-  const entranceY =
-    stair.direction === "up" ? stair.y + stair.height + 8 : stair.y - 12;
-  scene.add
-    .text(
-      stair.x + stair.width / 2,
-      entranceY,
-      `${stair.direction === "up" ? "↑" : "↓"} ${stair.label}`,
-      {
-        fontSize: "9px",
-        color: "#f3e1b3",
-        fontFamily: "sans-serif",
-        backgroundColor: "#334b4d",
-      },
-    )
-    .setPadding(3, 2)
-    .setOrigin(0.5)
-    .setDepth(1);
+  const endRail = stairRails(stair).at(-1)!;
+  rect(endRail.x, endRail.y, endRail.width, endRail.height, 0x8a7153);
+  rect(endRail.x, endRail.y, endRail.width + 1, 3, 0xd7c093);
 }
 
 function drawFurniture(scene: Phaser.Scene, item: Furniture): void {

@@ -5,6 +5,9 @@ import {
   openAchievementDisplay,
   holdDirection,
   expectRoom,
+  walkTo,
+  walkToRoom,
+  playerPosition,
 } from "./helpers";
 import { buildCatalog } from "../src/memories/catalog";
 import { validateArchive, type MemoryEntry } from "../src/memories/model";
@@ -20,26 +23,67 @@ test("stairs allow turning back and pausing before the landing, then travel up a
   page,
 }) => {
   await enter(page);
-  await holdDirection(page, "d", 1400);
-  await holdDirection(page, "w", 900);
+  await walkTo(page, "w", "y", 190);
+  await walkTo(page, "d", "x", 354);
+  const [stepX, stepY] = (await playerPosition(page))!.split(",").map(Number);
+  expect(stepX).toBeGreaterThan(306);
+  expect(stepY).toBeLessThan(180);
+  await page.screenshot({
+    path: "test-results/side-stair-walking.png",
+    fullPage: true,
+  });
   await expectRoom(page, "客厅");
   await page.keyboard.press("e");
   await expectRoom(page, "客厅");
   await page.evaluate(() => window.dispatchEvent(new Event("blur")));
   await page.getByRole("button", { name: "继续探索" }).click();
-  await holdDirection(page, "s", 900);
+  await walkTo(page, "a", "x", 286);
   await expectRoom(page, "客厅");
-  await holdDirection(page, "w", 3000);
+  await walkToRoom(page, "d", "二楼过道");
   await expectRoom(page, "二楼过道");
   await expect(page.getByTestId("floor-name")).toHaveText("2F");
   await page.screenshot({
     path: "test-results/upper-hall.png",
     fullPage: true,
   });
-  await holdDirection(page, "s", 2300);
+  await walkTo(page, "a", "x", 110);
+  const descendingY = Number((await playerPosition(page))!.split(",")[1]);
+  expect(descendingY).toBeGreaterThan(160);
+  await page.screenshot({
+    path: "test-results/side-stair-descending.png",
+    fullPage: true,
+  });
+  await walkToRoom(page, "a", "客厅");
   await expectRoom(page, "客厅");
   await expect(page.getByTestId("floor-name")).toHaveText("1F");
   await expect(page.locator("canvas")).toHaveCount(1);
+});
+
+test("a single touch direction climbs the side staircase and releasing it does not move the arrival", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await enter(page);
+  await walkTo(page, "w", "y", 190);
+  const button = page.getByRole("button", { name: "向右移动" });
+  const bounds = (await button.boundingBox())!;
+  await page.mouse.move(
+    bounds.x + bounds.width / 2,
+    bounds.y + bounds.height / 2,
+  );
+  await page.mouse.down();
+  try {
+    await expectRoom(page, "二楼过道");
+  } finally {
+    await page.mouse.up();
+  }
+  const arrival = await playerPosition(page);
+  await page.waitForTimeout(250);
+  expect(await playerPosition(page)).toBe(arrival);
+  await page.screenshot({
+    path: "test-results/side-stair-mobile.png",
+    fullPage: true,
+  });
 });
 
 test("basement achievements persist and the return staircase works with reduced motion", async ({
@@ -55,9 +99,10 @@ test("basement achievements persist and the return staircase works with reduced 
   await page.getByRole("button", { name: /生活里程碑/ }).click();
   await expect(page.getByText("待记录", { exact: true })).toHaveCount(3);
   await page.getByRole("button", { name: "关闭成就长廊" }).click();
-  await holdDirection(page, "s", 900);
-  await holdDirection(page, "a", 2000);
-  await holdDirection(page, "w", 2400);
+  await walkTo(page, "s", "y", 220);
+  await walkTo(page, "a", "x", 196);
+  await walkTo(page, "w", "y", 190);
+  await walkToRoom(page, "a", "客厅");
   await expectRoom(page, "客厅");
   const progress = await page.evaluate(() =>
     localStorage.getItem("our-little-world:exploration:v1"),

@@ -1,5 +1,5 @@
 import type { Bounds, Point, RoomDefinition } from "./types";
-import { roomObstacles } from "./stairs";
+import { roomObstacles, stairAt, stairY } from "./stairs";
 
 export const PLAYER_HALF_SIZE = 6;
 
@@ -42,6 +42,24 @@ export function movePlayer(
   const steps = Math.max(1, Math.ceil(distance / PLAYER_HALF_SIZE));
   const next = { ...position };
   for (let step = 0; step < steps; step++) {
+    const stair = stairAt(next, room);
+    if (stair) {
+      // Following the drawn incline changes screen X/Y together; there is no height axis.
+      // Preserve the lane offset so entering near a tread edge never snaps the character.
+      const slope =
+        (stair.exit.y - stair.entry.y) / (stair.exit.x - stair.entry.x);
+      const intent = velocity.x || velocity.y / slope;
+      const speed = Math.max(Math.abs(velocity.x), Math.abs(velocity.y));
+      const x =
+        next.x +
+        (Math.sign(intent) * speed * seconds) / steps / Math.hypot(1, slope);
+      const candidate = {
+        x,
+        y: next.y + stairY(stair, x) - stairY(stair, next.x),
+      };
+      if (canStand(candidate, room)) Object.assign(next, candidate);
+      continue;
+    }
     const horizontal = {
       x: next.x + (velocity.x * seconds) / steps,
       y: next.y,

@@ -59,32 +59,54 @@ test("each side of the fridge, diary and cake offers an interaction without requ
   }
 });
 
-test("stair rails block sideways entry and only the end platform triggers a floor change", () => {
+test("side stairs lift the actual walking path, allow retreat and block crossing the rail or support", () => {
   const stair = livingRoom.stairs![0];
-  const blocked = movePlayer(
-    { x: 310, y: 170 },
+  const halfway = movePlayer(
+    { x: 286, y: 190 },
     { x: 90, y: 0 },
-    2,
+    0.8,
     livingRoom,
   );
-  expect(blocked.x).toBeLessThanOrEqual(326);
-  expect(stairAt({ x: 367, y: 190 }, livingRoom)?.id).toBe(stair.id);
-  expect(
-    arrivingStair({ x: 367, y: 215 }, { x: 367, y: 190 }, livingRoom),
-  ).toBeUndefined();
-  expect(
-    arrivingStair({ x: 367, y: 132 }, { x: 367, y: 124 }, livingRoom)?.id,
-  ).toBe(stair.id);
-  expect(
-    arrivingStair({ x: 367, y: 124 }, { x: 367, y: 124 }, livingRoom),
-  ).toBeUndefined();
-  const turnedBack = movePlayer(
-    { x: 367, y: 190 },
+  expect(halfway.x).toBeGreaterThan(330);
+  expect(halfway.y).toBeLessThan(180);
+  expect(stairAt(halfway, livingRoom)?.id).toBe(stair.id);
+  expect(arrivingStair(stair.entry, halfway, livingRoom)).toBeUndefined();
+  const returned = movePlayer(halfway, { x: -90, y: 0 }, 1, livingRoom);
+  expect(returned.x).toBeLessThan(306);
+  expect(Math.abs(returned.y - 190)).toBeLessThan(3);
+  const above = movePlayer(
+    { x: 370, y: 110 },
     { x: 0, y: 90 },
-    0.5,
+    1.5,
     livingRoom,
   );
-  expect(turnedBack.y).toBeGreaterThan(210);
+  expect(above.y).toBeLessThan(140);
+  expect(stairAt(above, livingRoom)).toBeUndefined();
+  const below = movePlayer({ x: 370, y: 230 }, { x: 0, y: -90 }, 1, livingRoom);
+  expect(below.y).toBeGreaterThanOrEqual(214);
+  expect(arrivingStair(halfway, { x: 432, y: 129 }, livingRoom)?.id).toBe(
+    stair.id,
+  );
+  expect(
+    arrivingStair({ x: 432, y: 129 }, { x: 432, y: 129 }, livingRoom),
+  ).toBeUndefined();
+});
+
+test("every configured staircase moves along its incline in both directions", () => {
+  for (const room of Object.values(rooms)) {
+    for (const stair of room.stairs ?? []) {
+      const sign = Math.sign(stair.exit.x - stair.entry.x);
+      const start = { x: stair.entry.x - sign * 18, y: stair.entry.y };
+      const moving = movePlayer(start, { x: sign * 90, y: 0 }, 0.8, room);
+      expect(sign * (moving.x - stair.entry.x)).toBeGreaterThan(25);
+      expect(
+        stair.direction === "up" ? moving.y < start.y : moving.y > start.y,
+      ).toBe(true);
+      const returned = movePlayer(moving, { x: -sign * 90, y: 0 }, 1, room);
+      expect(sign * (returned.x - stair.entry.x)).toBeLessThan(0);
+      expect(returned.y).toBeCloseTo(start.y, 0);
+    }
+  }
 });
 
 test("another solid object blocks interaction and faraway objects have no prompt", () => {

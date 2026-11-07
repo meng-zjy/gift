@@ -1,7 +1,7 @@
 import { PLAYER_HALF_SIZE, movePlayer } from "./movement";
 import type { Point, RoomDefinition, Story } from "./types";
 import { artworks } from "../content/artworks";
-import { containsPoint } from "./stairs";
+import { onStairLanding, stairY } from "./stairs";
 
 /** Validate cross-room references before creating scenes, so expansion fails visibly. */
 export function validateWorld(
@@ -20,7 +20,7 @@ export function validateWorld(
       ...room.entrances,
     })) {
       validateSpawn(room, point, entranceId);
-      if (room.stairs?.some((stair) => containsPoint(stair.landing, point)))
+      if (room.stairs?.some((stair) => onStairLanding(stair, point)))
         throw new Error(`房间 ${id} 的入口位于楼梯触发区`);
     }
     for (const stair of room.stairs ?? []) {
@@ -31,20 +31,23 @@ export function validateWorld(
       )
         throw new Error(`楼梯 ${stair.id} 的目标入口不存在`);
       if (
-        !containsPoint(stair, stair.landing) ||
-        !containsPoint(stair, {
-          x: stair.landing.x + stair.landing.width,
-          y: stair.landing.y + stair.landing.height,
-        }) ||
-        stair.landing.width < 12 ||
-        stair.landing.height < 8
+        ![stair.entry.x, stair.entry.y, stair.exit.x, stair.exit.y].every(
+          Number.isFinite,
+        ) ||
+        Math.abs(stair.exit.x - stair.entry.x) < 72 ||
+        (stair.direction === "up"
+          ? stair.entry.y - stair.exit.y
+          : stair.exit.y - stair.entry.y) < 24
       )
         throw new Error(`楼梯 ${stair.id} 的平台配置无效`);
       validateSpawn(
         room,
         {
-          x: stair.landing.x + stair.landing.width / 2,
-          y: stair.landing.y + stair.landing.height / 2,
+          x: stair.entry.x + (stair.exit.x - stair.entry.x) * 0.95,
+          y: stairY(
+            stair,
+            stair.entry.x + (stair.exit.x - stair.entry.x) * 0.95,
+          ),
         },
         `楼梯 ${stair.id} 平台`,
       );

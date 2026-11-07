@@ -66,11 +66,11 @@ export type InteractionAction =
   | { type: "achievements" }
   | { type: "travel"; roomId: string; spawnId: string };
 
-export interface Staircase extends Bounds {
+export interface Staircase {
   id: string;
-  label: string;
   direction: "up" | "down";
-  landing: Bounds;
+  entry: Point;
+  exit: Point;
   destination: { roomId: string; spawnId: string };
 }
 

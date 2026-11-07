@@ -66,9 +66,9 @@ interaction: {
 
 配置校验覆盖：房间 ID、固定画布规格、物件 ID 重复、故事引用、门的目标入口、入口可通行性及非空故事。配置错误会阻止游戏初始化并显示重试界面，开发者应查看终端与配置测试获得具体原因。
 
-## 楼梯与成就扩展（v0.5.0）
+## 楼梯与成就扩展（v0.5.1 更新）
 
-房间 `stairs` 数组配置独立 ID、矩形范围、方向 `up/down`、末端 `landing` 矩形及 `destination: { roomId, spawnId }`。侧边与封闭端自动生成 6 像素护栏，行走到平台触发换层，保持固定图层。入口必须避开平台与护栏，开放端留出角色通道；布局调整后需验证实际往返，不能只检查目标引用。
+房间 `stairs` 数组配置独立 ID、方向 `up/down`、开放端 `entry: { x, y }`、末端 `exit: { x, y }` 及 `destination: { roomId, spawnId }`。踏面、扶手和侧面碰撞由入口与出口推导；横向跨度至少 72，屏幕纵向高差至少 24，up 的出口 Y 更小、down 更大。沿斜向通道行走到末端触发换层，保持固定图层，不添加高度轴。房间出生点必须避开末端触发区与护栏，开放端留出角色通道；布局调整后需验证实际往返，不能只检查目标引用。旧版矩形楼梯配置已替换，详见 [横向侧面楼梯](./side-staircases.md)。
 
 家具 `photo-board` 配合 album collection 打开展板；`achievement-wall` 配合 `{ type: "achievements" }` 打开成就长廊。当前主题增加 hallway、achievements。探索定义在 `src/achievements/definitions.ts`，房间条件使用固定 ID 列表，扩建不会改动旧徽章条件。
 

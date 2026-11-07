@@ -143,11 +143,7 @@ class WorldScene extends Phaser.Scene {
     if (moved) this.syncDebugPosition();
     const stair = arrivingStair(previous, this.position, this.room);
     if (stair) {
-      this.travel(
-        stair.destination.roomId,
-        stair.destination.spawnId,
-        stair.label,
-      );
+      this.travel(stair.destination.roomId, stair.destination.spawnId, true);
       return;
     }
     this.updateNearby();
@@ -175,7 +171,7 @@ class WorldScene extends Phaser.Scene {
       this.game.canvas.dataset.playerPosition = `${Math.round(this.position.x)},${Math.round(this.position.y)}`;
   }
 
-  private travel(roomId: string, spawnId: string, label?: string): void {
+  private travel(roomId: string, spawnId: string, fade = false): void {
     const arrive = () => {
       this.room = rooms[roomId];
       this.position = { ...this.room.entrances[spawnId] };
@@ -185,13 +181,13 @@ class WorldScene extends Phaser.Scene {
       this.input.keyboard?.resetKeys();
       this.renderRoom();
     };
-    if (!label) {
+    if (!fade) {
       arrive();
       return;
     }
     this.transitioning = true;
     this.bridge.direction = null;
-    this.bridge.onTransition(`${label} · ${rooms[roomId].name}`);
+    this.bridge.onTransition(rooms[roomId].name);
     this.input.keyboard?.resetKeys();
     // Reduced-motion users keep the actual staircase walk, with an immediate room change.
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
