@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import type { Furniture, RoomDefinition } from "./types";
 import { artworks } from "../content/artworks";
 import { drawStairwell } from "./stairArt";
+import { drawSideDoor } from "./doorArt";
 
 const colors = {
   outline: 0x394554,
@@ -254,15 +255,7 @@ function drawFurniture(scene: Phaser.Scene, item: Furniture): void {
       rect(item.width - 2, 0, 5, item.height, 0xbda280);
       rect(6, 10, item.width - 12, 3, 0x7e8879);
     } else {
-      rect(0, -3, item.width, item.height + 6, 0x8e7a64);
-      rect(1, 0, item.width - 2, item.height, 0x344a50);
-      rect(0, -3, item.width, 4, 0xc9ae88);
-      rect(0, item.height - 1, item.width, 4, 0xc9ae88);
-      const inner = item.doorSide === "right" ? 0 : item.width - 4;
-      rect(inner, 1, 4, item.height - 2, 0xb29b7f);
-      rect(4, 5, item.width - 8, item.height - 10, 0x547070);
-      for (let y = 8; y < item.height - 5; y += 8)
-        rect(4, y, item.width - 8, 1, 0x71857b);
+      drawSideDoor(scene, item);
     }
     return;
   }
