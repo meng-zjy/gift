@@ -14,6 +14,7 @@ export const achievementHall: RoomDefinition = {
   stairs: [
     {
       id: "basement-upstairs",
+      exitStyle: "inset-landing",
       entry: { x: 110, y: 272 },
       exit: { x: 46, y: 248 },
       direction: "up",

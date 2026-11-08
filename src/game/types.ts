@@ -67,6 +67,8 @@ export type InteractionAction =
   | { type: "travel"; roomId: string; spawnId: string };
 
 export interface Staircase {
+  /** Keep the landing and its frame inside the floor boundary when requested. */
+  exitStyle?: "inset-landing";
   id: string;
   direction: "up" | "down";
   entry: Point;

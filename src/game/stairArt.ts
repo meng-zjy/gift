@@ -58,8 +58,18 @@ export function drawStairwell(
       ? sideWallX
       : stair.exit.x + Math.sign(stair.exit.x - stair.entry.x) * 12;
   const rightExit = wallX > stair.exit.x;
-  const exitLeft = Math.min(stair.exit.x - 6, wallX - 8);
-  const exitRight = Math.max(stair.exit.x + 6, wallX + 8);
+  const insetLanding = stair.exitStyle === "inset-landing";
+  const endTread = rightExit ? steps.at(-1)! : steps[0];
+  const exitLeft = insetLanding
+    ? Math.min(wallX, stair.exit.x - 1)
+    : Math.min(stair.exit.x - 6, wallX - 8);
+  const exitRight = insetLanding
+    ? Math.max(wallX, stair.exit.x + 1)
+    : Math.max(stair.exit.x + 6, wallX + 8);
+  // The inset opening uses the actual final tread, including its pixel-step elevation.
+  const openingTop = insetLanding ? endTread.y - 16 : stair.exit.y - 25;
+  const openingBottom = insetLanding ? endTread.y + 14 : stair.exit.y + 18;
+  const lintelTop = insetLanding ? openingTop - 4 : stair.exit.y - 27;
 
   // Erase floorboard seams inside a real stair opening, rather than framing a pasted object.
   polygon(
@@ -104,25 +114,25 @@ export function drawStairwell(
   rect(
     structure,
     exitLeft,
-    stair.exit.y - 27,
+    lintelTop,
     exitRight - exitLeft,
-    bottom - stair.exit.y + 30,
+    bottom + 3 - lintelTop,
     materials.outline,
   );
   rect(
     structure,
     exitLeft + 2,
-    stair.exit.y - 25,
+    openingTop,
     exitRight - exitLeft - 4,
-    43,
+    openingBottom - openingTop,
     0x302e28,
   );
   rect(
     structure,
     exitLeft + 2,
-    stair.exit.y + 18,
+    openingBottom,
     exitRight - exitLeft - 4,
-    bottom - stair.exit.y - 15,
+    bottom + 3 - openingBottom,
     materials.wall,
   );
   rect(
@@ -191,28 +201,64 @@ export function drawStairwell(
     rect(treads, x - 1, stairY(stair, x) - 22, 2, 7, materials.wood);
   }
 
+  if (insetLanding) {
+    // A level platform bridges the wall opening to the highest tread without a black gap.
+    const platformTop = (openingTop + openingBottom) / 2;
+    rect(
+      treads,
+      exitLeft + 3,
+      platformTop,
+      exitRight - exitLeft - 3,
+      openingBottom - platformTop,
+      0x99764f,
+    );
+    rect(
+      treads,
+      exitLeft + 3,
+      platformTop,
+      exitRight - exitLeft - 3,
+      2,
+      0x604d3a,
+    );
+    rect(
+      treads,
+      exitLeft + 3,
+      openingTop + 2,
+      3,
+      openingBottom - openingTop - 2,
+      0x6d543e,
+    );
+    rect(
+      treads,
+      exitLeft + 5,
+      openingBottom - 2,
+      exitRight - exitLeft - 5,
+      2,
+      materials.woodLight,
+    );
+  }
+
   // The jamb occludes the arriving character at a fixed layer, without Y sorting or height physics.
-  const jambX = rightExit ? wallX + 2 : wallX - 6;
-  rect(
-    foreground,
-    jambX,
-    stair.exit.y - 27,
-    5,
-    bottom - stair.exit.y + 30,
-    materials.wall,
-  );
+  const jambX = insetLanding
+    ? rightExit
+      ? wallX - 5
+      : wallX
+    : rightExit
+      ? wallX + 2
+      : wallX - 6;
+  rect(foreground, jambX, lintelTop, 5, bottom + 3 - lintelTop, materials.wall);
   rect(
     foreground,
     rightExit ? jambX : jambX + 4,
-    stair.exit.y - 27,
+    lintelTop,
     1,
-    bottom - stair.exit.y + 30,
+    bottom + 3 - lintelTop,
     materials.wood,
   );
   rect(
     foreground,
     exitLeft,
-    stair.exit.y - 27,
+    lintelTop,
     exitRight - exitLeft,
     3,
     materials.wood,
@@ -220,7 +266,7 @@ export function drawStairwell(
   rect(
     foreground,
     exitLeft,
-    stair.exit.y - 28,
+    lintelTop - 1,
     exitRight - exitLeft,
     1,
     materials.woodLight,
