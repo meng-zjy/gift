@@ -61,7 +61,7 @@ test("stair destinations, landings and arrival positions reject invalid expansio
   landing["living-room"].stairs![0].exit.x = 374;
   expect(() => validateWorld(landing, stories)).toThrow("平台配置无效");
   const arrival = structuredClone(rooms);
-  arrival["living-room"].entrances["from-upstairs"] = { x: 435, y: 127 };
+  arrival["living-room"].entrances["from-upstairs"] = { x: 435, y: 111 };
   expect(() => validateWorld(arrival, stories)).toThrow("入口位于楼梯触发区");
 
   const obstructed = structuredClone(rooms);
@@ -69,7 +69,7 @@ test("stair destinations, landings and arrival positions reject invalid expansio
     id: "stair-obstruction",
     kind: "shelf",
     x: 404,
-    y: 136,
+    y: 120,
     width: 8,
     height: 8,
   });

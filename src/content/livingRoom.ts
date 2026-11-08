@@ -36,14 +36,14 @@ export const livingRoom: RoomDefinition = {
   spawn: { x: 240, y: 252 },
   entrances: {
     "from-kitchen": { x: 420, y: 220 },
-    "from-upstairs": { x: 354, y: 150 },
+    "from-upstairs": { x: 354, y: 134 },
     "from-basement": { x: 130, y: 246 },
   },
   stairs: [
     {
       id: "living-upstairs",
-      entry: { x: 374, y: 150 },
-      exit: { x: 438, y: 126 },
+      entry: { x: 374, y: 134 },
+      exit: { x: 438, y: 110 },
       direction: "up",
       destination: { roomId: "upper-hall", spawnId: "from-living" },
     },

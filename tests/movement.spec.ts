@@ -100,11 +100,21 @@ test("moving along a furniture edge remains possible", () => {
   expect(next.y).toBeGreaterThanOrEqual(162);
 });
 
-test("the upper passage crosses the entire living room and kitchen without invisible blocks", () => {
+test("upper passages stay open with a detour below the living room staircase", () => {
   for (const room of [livingRoom, rooms.kitchen]) {
-    const right = movePlayer({ x: 36, y: 95 }, { x: 90, y: 0 }, 4.5, room);
-    expect(right.x).toBeCloseTo(441);
-    const left = movePlayer(right, { x: -90, y: 0 }, 4.5, room);
+    const endX = room.id === "living-room" ? 354 : 441;
+    const duration = (endX - 36) / 90;
+    const right = movePlayer({ x: 36, y: 95 }, { x: 90, y: 0 }, duration, room);
+    expect(right.x).toBeCloseTo(endX);
+    if (room.id === "living-room") {
+      const below = movePlayer(right, { x: 0, y: 90 }, 75 / 90, room);
+      expect(below.y).toBeCloseTo(170);
+      const doorway = movePlayer(below, { x: 90, y: 0 }, 87 / 90, room);
+      expect(doorway.x).toBeCloseTo(441);
+      const back = movePlayer(doorway, { x: -90, y: 0 }, 87 / 90, room);
+      expect(back.x).toBeCloseTo(354);
+    }
+    const left = movePlayer(right, { x: -90, y: 0 }, duration, room);
     expect(left.x).toBeCloseTo(36);
   }
 });
