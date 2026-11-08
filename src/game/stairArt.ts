@@ -58,20 +58,15 @@ export function drawStairwell(
       ? sideWallX
       : stair.exit.x + Math.sign(stair.exit.x - stair.entry.x) * 12;
   const rightExit = wallX > stair.exit.x;
-  const insetLanding = stair.exitStyle === "inset-landing";
   const endTread = rightExit ? steps.at(-1)! : steps[0];
+  // Every flight uses the approved basement detail, mirrored for right-hand exits.
   // The painted floor extends two pixels beyond the collision-safe walking bounds.
-  const wallFaceX = insetLanding ? wallX + (rightExit ? 2 : -2) : wallX;
-  const exitLeft = insetLanding
-    ? Math.min(wallFaceX, stair.exit.x - 1)
-    : Math.min(stair.exit.x - 6, wallX - 8);
-  const exitRight = insetLanding
-    ? Math.max(wallFaceX, stair.exit.x + 1)
-    : Math.max(stair.exit.x + 6, wallX + 8);
-  // The inset opening uses the actual final tread, including its pixel-step elevation.
-  const openingTop = insetLanding ? endTread.y - 16 : stair.exit.y - 25;
-  const openingBottom = insetLanding ? endTread.y + 14 : stair.exit.y + 18;
-  const lintelTop = insetLanding ? openingTop - 4 : stair.exit.y - 27;
+  const wallFaceX = wallX + (rightExit ? 2 : -2);
+  const exitLeft = Math.min(wallFaceX, stair.exit.x - 1);
+  const exitRight = Math.max(wallFaceX, stair.exit.x + 1);
+  const openingTop = endTread.y - 16;
+  const openingBottom = endTread.y + 14;
+  const lintelTop = openingTop - 4;
 
   // Erase floorboard seams inside a real stair opening, rather than framing a pasted object.
   polygon(
@@ -204,13 +199,7 @@ export function drawStairwell(
   }
 
   // The jamb occludes the arriving character at a fixed layer, without Y sorting or height physics.
-  const jambX = insetLanding
-    ? rightExit
-      ? wallFaceX - 5
-      : wallFaceX
-    : rightExit
-      ? wallX + 2
-      : wallX - 6;
+  const jambX = rightExit ? wallFaceX - 5 : wallFaceX;
   rect(foreground, jambX, lintelTop, 5, bottom + 3 - lintelTop, materials.wall);
   rect(
     foreground,
