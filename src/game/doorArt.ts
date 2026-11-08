@@ -1,7 +1,7 @@
 import Phaser from "phaser";
 import type { Furniture } from "./types";
 
-/** Mirrored side doors keep the outer house outline intact and open toward the room. */
+/** Side doors interrupt the cutaway wall; the open leaf projects into the room. */
 export function drawSideDoor(scene: Phaser.Scene, item: Furniture): void {
   const brush = scene.add.graphics().setDepth(1);
   const right = item.doorSide === "right";
@@ -24,16 +24,44 @@ export function drawSideDoor(scene: Phaser.Scene, item: Furniture): void {
   };
   const height = item.height;
 
-  // The recess stops at the interior wall face; trim projects inward onto the floor.
-  rect(0, -3, 25, height + 6, 0x6c5544);
-  rect(1, 1, 21, height - 2, 0x253638);
-  rect(1, 2, 4, height - 4, 0x18292f);
-  rect(22, 0, 3, height, 0xbe9b72);
-  rect(24, 1, 1, height - 2, 0xe0c39a);
-  rect(0, -3, 25, 4, 0xc6a17d);
-  rect(0, -3, 25, 1, 0xe0c39a);
-  rect(0, height - 1, 25, 4, 0xb39470);
-  rect(1, height, 22, 1, 0xdfc49b);
+  const wallThickness = 6;
+  const recessDepth = 8;
+
+  // Remove the wall stripe only inside the opening. A continuous stripe behind
+  // the door makes it read as a framed picture sitting on the floor.
+  rect(-wallThickness, 0, wallThickness + recessDepth, height, 0x253638);
+  rect(-wallThickness, 2, wallThickness + 2, height - 4, 0x18292f);
+
+  // Short wall returns reveal its thickness above and below the actual passage.
+  rect(-wallThickness, -5, wallThickness + 3, 5, 0x927d66);
+  rect(-wallThickness, -5, wallThickness + 3, 2, 0xd8dbcf);
+  rect(-wallThickness, height, wallThickness + 3, 5, 0x927d66);
+  rect(-wallThickness, height + 3, wallThickness + 3, 2, 0xd8dbcf);
+  rect(1, 0, 3, height, 0x8c7157);
+  rect(3, 1, 1, height - 2, 0xd0ab7c);
+  rect(-wallThickness, -2, wallThickness + recessDepth, 3, 0xc6a17d);
+
+  // The sill continues through the wall; the leaf casts a small contact shadow
+  // onto the room floor instead of carrying a rectangular dark backing.
+  polygon(
+    [
+      [-wallThickness, height - 12],
+      [4, height - 10],
+      [8, height],
+      [-wallThickness, height],
+    ],
+    0xa9a593,
+  );
+  rect(-wallThickness, height - 1, wallThickness + 14, 2, 0xc4b390);
+  polygon(
+    [
+      [3, height - 3],
+      [18, height - 7],
+      [23, height + 1],
+      [8, height + 3],
+    ],
+    0xa68a6e,
+  );
 
   // A foreshortened open leaf, two inset panels and a latch distinguish it from a window.
   polygon(

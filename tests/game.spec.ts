@@ -81,9 +81,9 @@ test("travel to kitchen, read food preferences, return repeatedly without duplic
   await expect(page.locator(".reader-dessert")).toBeVisible();
   await page.screenshot({ path: "test-results/dessert.png", fullPage: true });
   await page.getByRole("button", { name: "关闭回忆", exact: true }).click();
-  await holdKey(page, "s", 200);
-  await holdKey(page, "a", 3500);
-  await holdKey(page, "w", 580);
+  await walkTo(page, "s", "y", 260);
+  await walkTo(page, "a", "x", 60);
+  await walkTo(page, "w", "y", 210);
   await expect(page.getByRole("button", { name: /回客厅/ })).toBeEnabled();
   for (let trip = 0; trip < 3; trip++) {
     await page.keyboard.press("e");
