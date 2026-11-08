@@ -14,8 +14,8 @@ export function drawSideDoor(scene: Phaser.Scene, item: Furniture): void {
   ) => brush.fillStyle(color).fillRect(x, y, width, heightPx);
 
   // Use the stairwell palette: one dark reveal, one continuous timber jamb and no floating pixels.
-  rect(item.x + 1, item.y, item.width - 2, height, 0x27383a);
-  rect(item.x + 1, item.y + 2, 3, height - 4, 0x17282e);
+  rect(item.x + 1, item.y, item.width - 2, height, 0x413b32);
+  rect(item.x + 1, item.y + 2, 3, height - 4, 0x6c5544);
   rect(item.x + item.width - 4, item.y + 2, 3, height - 4, 0x6c5544);
   rect(item.x + 1, item.y - 2, item.width - 2, 2, 0x98745e);
   rect(item.x + 1, item.y + height, item.width - 2, 2, 0x98745e);

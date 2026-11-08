@@ -1,6 +1,6 @@
 # 我们的小小世界
 
-送给彼此喜欢的人的网页像素纪念游戏。当前版本为 **v0.5.13：统一房门与楼梯的材质语言**，可沿楼梯探索一楼、二楼和负一楼，并亲手添加日记、双方的话、多图相册与生活里程碑。
+送给彼此喜欢的人的网页像素纪念游戏。当前版本为 **v0.5.14：柔化房门深色门套**，可沿楼梯探索一楼、二楼和负一楼，并亲手添加日记、双方的话、多图相册与生活里程碑。
 
 ## 启动
 
@@ -104,7 +104,7 @@ archive/         保留的旧普通网页原型
 - [v0.3.0 画面与交互改进](docs/visual-experience.md)
 - [v0.3.1 通路与交互改进](docs/navigation-experience.md)
 - [楼梯布局与结构融合（含 v0.5.9）](docs/stair-layout-and-collision.md)
-- [房门造型与墙体融合（含 v0.5.13）](docs/door-appearance.md)
+- [房门造型与墙体融合（含 v0.5.14）](docs/door-appearance.md)
 - [v0.5.1 横向侧面楼梯](docs/side-staircases.md)
 - [v0.5.0 楼层、照片展板与成就长廊](docs/floors-and-achievements.md)
 - [v0.4.0 内容管理与备份](docs/content-management.md)
