@@ -1,6 +1,6 @@
 # 我们的小小世界
 
-送给彼此喜欢的人的网页像素纪念游戏。当前版本为 **v0.5.5：负一楼楼梯出口对齐**，可沿楼梯探索一楼、二楼和负一楼，并亲手添加日记、双方的话、多图相册与生活里程碑。
+送给彼此喜欢的人的网页像素纪念游戏。当前版本为 **v0.5.6：负一楼出口恢复深色并贴墙**，可沿楼梯探索一楼、二楼和负一楼，并亲手添加日记、双方的话、多图相册与生活里程碑。
 
 ## 启动
 
@@ -103,7 +103,7 @@ archive/         保留的旧普通网页原型
 - [里程碑 1 交付记录](docs/milestone-1.md)
 - [v0.3.0 画面与交互改进](docs/visual-experience.md)
 - [v0.3.1 通路与交互改进](docs/navigation-experience.md)
-- [楼梯布局与结构融合（含 v0.5.5）](docs/stair-layout-and-collision.md)
+- [楼梯布局与结构融合（含 v0.5.6）](docs/stair-layout-and-collision.md)
 - [v0.5.1 横向侧面楼梯](docs/side-staircases.md)
 - [v0.5.0 楼层、照片展板与成就长廊](docs/floors-and-achievements.md)
 - [v0.4.0 内容管理与备份](docs/content-management.md)

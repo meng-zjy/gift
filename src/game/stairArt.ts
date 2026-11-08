@@ -60,11 +60,13 @@ export function drawStairwell(
   const rightExit = wallX > stair.exit.x;
   const insetLanding = stair.exitStyle === "inset-landing";
   const endTread = rightExit ? steps.at(-1)! : steps[0];
+  // The painted floor extends two pixels beyond the collision-safe walking bounds.
+  const wallFaceX = insetLanding ? wallX + (rightExit ? 2 : -2) : wallX;
   const exitLeft = insetLanding
-    ? Math.min(wallX, stair.exit.x - 1)
+    ? Math.min(wallFaceX, stair.exit.x - 1)
     : Math.min(stair.exit.x - 6, wallX - 8);
   const exitRight = insetLanding
-    ? Math.max(wallX, stair.exit.x + 1)
+    ? Math.max(wallFaceX, stair.exit.x + 1)
     : Math.max(stair.exit.x + 6, wallX + 8);
   // The inset opening uses the actual final tread, including its pixel-step elevation.
   const openingTop = insetLanding ? endTread.y - 16 : stair.exit.y - 25;
@@ -201,48 +203,11 @@ export function drawStairwell(
     rect(treads, x - 1, stairY(stair, x) - 22, 2, 7, materials.wood);
   }
 
-  if (insetLanding) {
-    // A level platform bridges the wall opening to the highest tread without a black gap.
-    const platformTop = (openingTop + openingBottom) / 2;
-    rect(
-      treads,
-      exitLeft + 3,
-      platformTop,
-      exitRight - exitLeft - 3,
-      openingBottom - platformTop,
-      0x99764f,
-    );
-    rect(
-      treads,
-      exitLeft + 3,
-      platformTop,
-      exitRight - exitLeft - 3,
-      2,
-      0x604d3a,
-    );
-    rect(
-      treads,
-      exitLeft + 3,
-      openingTop + 2,
-      3,
-      openingBottom - openingTop - 2,
-      0x6d543e,
-    );
-    rect(
-      treads,
-      exitLeft + 5,
-      openingBottom - 2,
-      exitRight - exitLeft - 5,
-      2,
-      materials.woodLight,
-    );
-  }
-
   // The jamb occludes the arriving character at a fixed layer, without Y sorting or height physics.
   const jambX = insetLanding
     ? rightExit
-      ? wallX - 5
-      : wallX
+      ? wallFaceX - 5
+      : wallFaceX
     : rightExit
       ? wallX + 2
       : wallX - 6;
