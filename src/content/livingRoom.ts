@@ -38,6 +38,7 @@ export const livingRoom: RoomDefinition = {
     "from-kitchen": { x: 420, y: 220 },
     "from-upstairs": { x: 354, y: 134 },
     "from-basement": { x: 130, y: 246 },
+    "from-garden": { x: 320, y: 258 },
   },
   stairs: [
     {
@@ -107,6 +108,21 @@ export const livingRoom: RoomDefinition = {
         label: "去厨房",
         range: 40,
         action: { type: "travel", roomId: "kitchen", spawnId: "from-living" },
+      },
+    },
+    {
+      id: "garden-door",
+      kind: "door",
+      x: 204,
+      y: 274,
+      width: 72,
+      height: 18,
+      solid: false,
+      doorSide: "bottom",
+      interaction: {
+        label: "去庭院",
+        range: 36,
+        action: { type: "travel", roomId: "garden", spawnId: "from-living" },
       },
     },
   ],

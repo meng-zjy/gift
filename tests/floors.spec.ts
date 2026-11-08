@@ -166,6 +166,25 @@ test("the exposed sides of both descending stairwells stop feet while their entr
   await walkToRoom(page, "a", "客厅");
 });
 
+test("the garden doorway opens a reusable outdoor memory space and returns home", async ({
+  page,
+}) => {
+  await enter(page);
+  await walkTo(page, "s", "y", 260);
+  await expect(page.getByRole("button", { name: /去庭院/ })).toBeEnabled();
+  await page.keyboard.press("e");
+  await expectRoom(page, "庭院");
+  await expect(page.getByTestId("floor-name")).toHaveText("1F");
+  await page.screenshot({
+    path: "test-results/garden-room.png",
+    fullPage: true,
+  });
+  await walkTo(page, "w", "y", 108);
+  await expect(page.getByRole("button", { name: /回到客厅/ })).toBeEnabled();
+  await page.keyboard.press("e");
+  await expectRoom(page, "客厅");
+});
+
 test("publish a real milestone, read its story and linked memory, and preserve it when resetting exploration", async ({
   page,
 }) => {

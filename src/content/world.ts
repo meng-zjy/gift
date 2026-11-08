@@ -2,6 +2,7 @@ import { livingRoom, stories as livingStories } from "./livingRoom";
 import { bedroom } from "./bedroom";
 import { upperHall } from "./upperHall";
 import { achievementHall } from "./achievementHall";
+import { garden } from "./garden";
 import type { RoomDefinition, Story } from "../game/types";
 
 export const stories: Record<string, Story> = {
@@ -128,4 +129,5 @@ export const rooms: Record<string, RoomDefinition> = {
   [bedroom.id]: bedroom,
   [upperHall.id]: upperHall,
   [achievementHall.id]: achievementHall,
+  [garden.id]: garden,
 };

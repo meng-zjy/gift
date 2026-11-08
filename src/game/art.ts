@@ -38,6 +38,15 @@ export function drawRoom(scene: Phaser.Scene, room: RoomDefinition): void {
         );
       }
     }
+  } else if (room.theme === "garden") {
+    for (let y = 84; y < 292; y += 12) {
+      for (let x = 28; x < 452; x += 12) {
+        rect(x, y, 11, 11, (x / 12 + y / 12) % 2 < 1 ? 0x8eae83 : 0x83a179);
+        if ((x + y) % 36 === 0) rect(x + 3, y + 2, 2, 2, 0xb2c38b);
+      }
+    }
+    rect(28, 174, 424, 44, 0xb6a078);
+    for (let x = 32; x < 450; x += 18) rect(x, 178, 2, 36, 0xcbb98b);
   } else
     for (let y = 85; y < 291; y += 17) {
       rect(28, y, 424, 1, colors.floorLine);
@@ -176,6 +185,16 @@ function drawWalls(
     rect(177, 31, 125, 4, 0xa58b66);
     rect(191, 35, 97, 19, 0x51675e);
     rect(199, 42, 81, 2, 0xa1b29b);
+  } else if (room.theme === "garden") {
+    rect(26, 26, 428, 56, 0x9cb89e);
+    for (let x = 32; x < 450; x += 18) rect(x, 28, 1, 48, 0x88a48e);
+    rect(26, 77, 428, 7, 0x6f8d72);
+    rect(26, 77, 428, 2, 0xb7c9a4);
+    rect(72, 38, 94, 32, 0x789673);
+    rect(76, 42, 86, 24, 0xb2c89c);
+    rect(113, 42, 4, 24, 0xd8dfbe);
+    rect(76, 53, 86, 3, 0xd8dfbe);
+    rect(70, 68, 98, 5, 0x9d7d5e);
   } else {
     rect(26, 26, 428, 56, 0xeee5cc);
     for (let y = 28; y < 77; y += 12) {

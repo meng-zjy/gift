@@ -78,7 +78,8 @@ export interface RoomDefinition {
   id: string;
   name: string;
   floor: -1 | 1 | 2;
-  theme: "living" | "kitchen" | "bedroom" | "hallway" | "achievements";
+  theme:
+    "living" | "kitchen" | "bedroom" | "hallway" | "achievements" | "garden";
   hint: string;
   width: number;
   height: number;
