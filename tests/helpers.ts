@@ -68,7 +68,7 @@ export async function walkToRoom(page: Page, key: string, name: string) {
 }
 export async function goUpstairs(page: Page) {
   await walkTo(page, "d", "x", 354);
-  await walkTo(page, "s", "y", 272);
+  await walkTo(page, "w", "y", 150);
   await walkToRoom(page, "d", "二楼过道");
 }
 export async function goBedroom(page: Page) {

@@ -33,7 +33,7 @@ function canStand(position: Point, room: RoomDefinition): boolean {
     body.y + body.height <= floor.y + floor.height;
   return (
     inside &&
-    !blockedByStairs(position, room) &&
+    !blockedByStairs(position, room, PLAYER_HALF_SIZE) &&
     !roomObstacles(room).some((obstacle) => overlaps(body, obstacle))
   );
 }

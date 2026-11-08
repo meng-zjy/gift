@@ -3,6 +3,7 @@ import {
   approachDiary,
   approachPhotoBoard,
   holdDirection as hold,
+  walkTo,
 } from "./helpers";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
@@ -255,8 +256,11 @@ test("both sides of the conversation can be published and found through the comp
   await page.getByLabel("表达方").selectOption("her");
   await save(page);
   await game(page);
-  await hold(page, "a", 690);
-  await hold(page, "w", 400);
+  await walkTo(page, "a", "x", 178);
+  await walkTo(page, "w", "y", 222);
+  await expect(
+    page.getByRole("button", { name: /和小人说说话/ }),
+  ).toBeEnabled();
   await page.keyboard.press("e");
   await page.getByRole("button", { name: /演示：她给我的回应/ }).click();
   await expect(page.locator(".reader-dialogue")).toBeVisible();

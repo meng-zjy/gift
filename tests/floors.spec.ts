@@ -24,11 +24,11 @@ test("stairs allow turning back and pausing before the landing, then travel up a
 }) => {
   await enter(page);
   await walkTo(page, "d", "x", 354);
-  await walkTo(page, "s", "y", 272);
+  await walkTo(page, "w", "y", 150);
   await walkTo(page, "d", "x", 406);
   const [stepX, stepY] = (await playerPosition(page))!.split(",").map(Number);
   expect(stepX).toBeGreaterThan(374);
-  expect(stepY).toBeLessThan(272);
+  expect(stepY).toBeLessThan(150);
   await page.screenshot({
     path: "test-results/side-stair-walking.png",
     fullPage: true,
@@ -66,7 +66,7 @@ test("a single touch direction climbs the side staircase and releasing it does n
   await page.setViewportSize({ width: 390, height: 844 });
   await enter(page);
   await walkTo(page, "d", "x", 354);
-  await walkTo(page, "s", "y", 272);
+  await walkTo(page, "w", "y", 150);
   const button = page.getByRole("button", { name: "向右移动" });
   const bounds = (await button.boundingBox())!;
   await page.mouse.move(
@@ -94,11 +94,11 @@ test("keyboard walkers can use both edges of the stairs on consecutive round tri
   test.setTimeout(45000);
   await enter(page);
   await walkTo(page, "d", "x", 354);
-  await walkTo(page, "s", "y", 264);
+  await walkTo(page, "w", "y", 142);
   await walkToRoom(page, "d", "二楼过道");
   await walkTo(page, "s", "y", 254);
   await walkToRoom(page, "a", "客厅");
-  await walkTo(page, "s", "y", 280);
+  await walkTo(page, "s", "y", 158);
   await walkToRoom(page, "d", "二楼过道");
   await walkTo(page, "w", "y", 238);
   await walkToRoom(page, "a", "客厅");
@@ -133,6 +133,37 @@ test("basement achievements persist and the return staircase works with reduced 
     ),
   ).toBe(progress);
   await goUpstairs(page);
+});
+
+test("the exposed sides of both descending stairwells stop feet while their entrances remain open", async ({
+  page,
+}) => {
+  test.setTimeout(45000);
+  await enter(page);
+  await walkTo(page, "s", "y", 282);
+  await walkTo(page, "a", "x", 130);
+  await holdDirection(page, "a", 700);
+  expect(
+    Number((await playerPosition(page))!.split(",")[0]),
+  ).toBeGreaterThanOrEqual(119);
+  await page.screenshot({
+    path: "test-results/living-downstair-side.png",
+    fullPage: true,
+  });
+  await walkTo(page, "d", "x", 354);
+  await walkTo(page, "w", "y", 150);
+  await walkToRoom(page, "d", "二楼过道");
+  await walkTo(page, "s", "y", 282);
+  await holdDirection(page, "a", 700);
+  expect(
+    Number((await playerPosition(page))!.split(",")[0]),
+  ).toBeGreaterThanOrEqual(119);
+  await page.screenshot({
+    path: "test-results/hall-downstair-side.png",
+    fullPage: true,
+  });
+  await walkTo(page, "w", "y", 246);
+  await walkToRoom(page, "a", "客厅");
 });
 
 test("publish a real milestone, read its story and linked memory, and preserve it when resetting exploration", async ({

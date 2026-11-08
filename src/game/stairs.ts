@@ -1,6 +1,8 @@
 import type { Bounds, Point, RoomDefinition, Staircase } from "./types";
 
 export const STAIR_LANE_HALF_WIDTH = 12;
+// Toe pixels extend two pixels beyond the floor body; the step outline adds one more.
+const STAIR_SIDE_VISUAL_PADDING = 3;
 // Six readable treads still leave room for a full-width approach in a corner bay.
 export const MIN_STAIR_RUN = 56;
 
@@ -35,10 +37,20 @@ export function roomObstacles(room: RoomDefinition): Bounds[] {
 }
 
 /** Boundaries are expressed in player-centre space: every accepted lane stays clear end to end. */
-export function blockedByStairs(point: Point, room: RoomDefinition): boolean {
+export function blockedByStairs(
+  point: Point,
+  room: RoomDefinition,
+  bodyHalfSize: number,
+): boolean {
   return (room.stairs ?? []).some((stair) => {
     const progress = stairProgress(stair, point);
-    if (progress < 0) return false;
+    // The open mouth accepts the full lane, but its closed side must stop the entire foot body.
+    if (
+      progress < 0 &&
+      Math.abs(point.x - stair.entry.x) >=
+        bodyHalfSize + STAIR_SIDE_VISUAL_PADDING
+    )
+      return false;
     if (progress > 1) {
       const pastExit = Math.abs(point.x - stair.exit.x);
       return pastExit <= 20 && Math.abs(point.y - stair.exit.y) <= 28;

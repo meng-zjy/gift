@@ -18,7 +18,7 @@ export const stories: Record<string, Story> = {
     title: "你来啦。",
     speaker: "屋里的另一个小人 · 演示对白",
     paragraphs: [
-      "二楼卧室的日记本，是留给你的。右下角的楼梯能走上去，过道还有我们的照片墙。",
+      "二楼卧室的日记本，是留给你的。右上角的楼梯能走上去，过道还有我们的照片墙。",
       "你慢慢逛，我就在这里。以后这间小屋，会装下越来越多我们的故事。",
     ],
   },
@@ -36,14 +36,14 @@ export const livingRoom: RoomDefinition = {
   spawn: { x: 240, y: 252 },
   entrances: {
     "from-kitchen": { x: 420, y: 220 },
-    "from-upstairs": { x: 354, y: 272 },
+    "from-upstairs": { x: 354, y: 150 },
     "from-basement": { x: 130, y: 246 },
   },
   stairs: [
     {
       id: "living-upstairs",
-      entry: { x: 374, y: 272 },
-      exit: { x: 438, y: 248 },
+      entry: { x: 374, y: 150 },
+      exit: { x: 438, y: 126 },
       direction: "up",
       destination: { roomId: "upper-hall", spawnId: "from-living" },
     },

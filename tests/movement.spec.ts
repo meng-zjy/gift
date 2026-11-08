@@ -10,6 +10,28 @@ import {
   stairY,
 } from "../src/game/stairs";
 
+test("both descending stairwells stop the whole foot body at their exposed side", () => {
+  for (const room of Object.values(rooms)) {
+    for (const stair of (room.stairs ?? []).filter(
+      (item) => item.direction === "down",
+    )) {
+      const sign = Math.sign(stair.exit.x - stair.entry.x);
+      const start = { x: stair.entry.x - sign * 20, y: stair.entry.y + 36 };
+      const stopped = movePlayer(start, { x: sign * 90, y: 0 }, 1, room);
+      expect(sign * (stopped.x - stair.entry.x), stair.id).toBeLessThanOrEqual(
+        -9,
+      );
+      const alongSide = movePlayer(
+        { x: stair.entry.x - sign * 3, y: stair.entry.y - 36 },
+        { x: 0, y: 90 },
+        0.8,
+        room,
+      );
+      expect(alongSide.y, stair.id).toBeLessThan(stair.entry.y + 12);
+    }
+  }
+});
+
 test("every accepted stair lane reaches the landing and can retreat without edge snags", () => {
   for (const room of Object.values(rooms)) {
     for (const stair of room.stairs ?? []) {
@@ -96,17 +118,17 @@ test("corner stairs leave the living room's cross-room route open", () => {
   expect(left.y).toBe(210);
 });
 
-test("the kitchen approach stays open along the right wall above the corner stairs", () => {
+test("the kitchen doorway stays accessible below the upper corner stairs", () => {
   const bottom = movePlayer(
-    { x: 420, y: 95 },
+    { x: 420, y: 180 },
     { x: 0, y: 90 },
-    125 / 90,
+    40 / 90,
     livingRoom,
   );
   expect(bottom.y).toBeCloseTo(220);
   expect(bottom.x).toBe(420);
-  const top = movePlayer(bottom, { x: 0, y: -90 }, 125 / 90, livingRoom);
-  expect(top.y).toBeCloseTo(95);
+  const top = movePlayer(bottom, { x: 0, y: -90 }, 40 / 90, livingRoom);
+  expect(top.y).toBeCloseTo(180);
 });
 
 test("each side of the fridge, diary and cake offers an interaction without requiring a facing", () => {
