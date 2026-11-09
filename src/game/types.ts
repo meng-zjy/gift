@@ -47,7 +47,12 @@ export interface Furniture extends Bounds {
     | "bed"
     | "painting"
     | "photo-board"
-    | "achievement-wall";
+    | "achievement-wall"
+    | "bench"
+    | "tree"
+    | "flower"
+    | "map-board"
+    | "garden-gate";
   solid?: boolean;
   artworkId?: ArtworkId;
   doorSide?: "left" | "right" | "bottom";

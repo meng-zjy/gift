@@ -22,8 +22,8 @@ export function drawRoom(scene: Phaser.Scene, room: RoomDefinition): void {
   const rect = (x: number, y: number, w: number, h: number, color: number) => {
     brush.fillStyle(color).fillRect(x, y, w, h);
   };
-  rect(14, 27, 452, 279, 0x152836);
-  rect(20, 20, 440, 278, colors.outline);
+  rect(14, 27, 452, 279, room.theme === "garden" ? 0x3f6150 : 0x152836);
+  rect(20, 20, 440, 278, room.theme === "garden" ? 0x708a65 : colors.outline);
   rect(26, 26, 428, 64, colors.wall);
   rect(26, 82, 428, 210, colors.floor);
   if (room.theme === "kitchen") {
@@ -39,14 +39,30 @@ export function drawRoom(scene: Phaser.Scene, room: RoomDefinition): void {
       }
     }
   } else if (room.theme === "garden") {
-    for (let y = 84; y < 292; y += 12) {
-      for (let x = 28; x < 452; x += 12) {
-        rect(x, y, 11, 11, (x / 12 + y / 12) % 2 < 1 ? 0x8eae83 : 0x83a179);
-        if ((x + y) % 36 === 0) rect(x + 3, y + 2, 2, 2, 0xb2c38b);
-      }
+    rect(26, 82, 428, 210, 0x8baa7e);
+    for (const [x, y, width] of [
+      [42, 111, 9],
+      [186, 132, 7],
+      [352, 104, 11],
+      [74, 254, 8],
+      [430, 274, 9],
+      [292, 236, 7],
+    ]) {
+      rect(x, y, width, 2, 0xaac08d);
+      rect(x + 3, y - 3, 2, 5, 0x70956e);
     }
-    rect(28, 174, 424, 44, 0xb6a078);
-    for (let x = 32; x < 450; x += 18) rect(x, 178, 2, 36, 0xcbb98b);
+    rect(28, 192, 424, 34, 0xb4a27b);
+    for (const [x, y, width] of [
+      [38, 198, 28],
+      [92, 211, 20],
+      [142, 198, 36],
+      [206, 211, 26],
+      [259, 199, 31],
+      [316, 212, 38],
+      [377, 198, 28],
+      [420, 211, 20],
+    ])
+      rect(x, y, width, 3, 0xcab98e);
   } else
     for (let y = 85; y < 291; y += 17) {
       rect(28, y, 424, 1, colors.floorLine);
@@ -186,15 +202,18 @@ function drawWalls(
     rect(191, 35, 97, 19, 0x51675e);
     rect(199, 42, 81, 2, 0xa1b29b);
   } else if (room.theme === "garden") {
-    rect(26, 26, 428, 56, 0x9cb89e);
-    for (let x = 32; x < 450; x += 18) rect(x, 28, 1, 48, 0x88a48e);
-    rect(26, 77, 428, 7, 0x6f8d72);
-    rect(26, 77, 428, 2, 0xb7c9a4);
-    rect(72, 38, 94, 32, 0x789673);
-    rect(76, 42, 86, 24, 0xb2c89c);
-    rect(113, 42, 4, 24, 0xd8dfbe);
-    rect(76, 53, 86, 3, 0xd8dfbe);
-    rect(70, 68, 98, 5, 0x9d7d5e);
+    rect(26, 26, 428, 56, 0x9ec5d0);
+    rect(26, 52, 428, 30, 0x9ab997);
+    rect(26, 77, 428, 7, 0x527653);
+    rect(26, 77, 428, 2, 0xbed19e);
+    rect(55, 42, 42, 3, 0xdde8dc);
+    rect(49, 45, 56, 4, 0xdde8dc);
+    rect(328, 34, 72, 3, 0xdde8dc);
+    rect(319, 37, 90, 4, 0xdde8dc);
+    for (const x of [30, 62, 110, 146, 192, 232, 275, 315, 362, 415, 445]) {
+      rect(x, 59, Math.min(18, 454 - x), 19, 0x5b855d);
+      rect(x + 4, 54, Math.min(12, 450 - x), 25, 0x6f9865);
+    }
   } else {
     rect(26, 26, 428, 56, 0xeee5cc);
     for (let y = 28; y < 77; y += 12) {
@@ -278,7 +297,24 @@ function drawFurniture(scene: Phaser.Scene, item: Furniture): void {
     }
     return;
   }
-  rect(3, item.height - 3, item.width, 7, 0x9c816d);
+  const outdoors = [
+    "bench",
+    "tree",
+    "flower",
+    "map-board",
+    "garden-gate",
+  ].includes(item.kind);
+  // Outdoor foliage casts a soft green shadow rather than a rectangular furniture base.
+  if (outdoors) {
+    brush
+      .fillStyle(0x78966e)
+      .fillEllipse(
+        item.x + item.width / 2,
+        item.y + item.height - 2,
+        item.width - 4,
+        6,
+      );
+  } else rect(3, item.height - 3, item.width, 7, 0x9c816d);
   if (item.kind === "photo-board") {
     rect(0, 0, item.width, item.height, 0x6b6756);
     rect(3, 3, item.width - 6, item.height - 8, 0xae9d7b);
@@ -304,6 +340,50 @@ function drawFurniture(scene: Phaser.Scene, item: Furniture): void {
       rect(x + 9, 23, 11, 2, 0xd4bc83);
       rect(x + 6, 29, 17, 1, 0x9eae95);
     }
+  } else if (item.kind === "bench") {
+    rect(9, 1, 4, 30, 0x635b49);
+    rect(item.width - 13, 1, 4, 30, 0x635b49);
+    for (const y of [1, 7, 13]) {
+      rect(2, y, item.width - 4, 4, 0x9a714f);
+      rect(3, y, item.width - 6, 1, 0xd1ac79);
+    }
+    rect(0, 20, item.width, 6, 0xb28a5e);
+    rect(2, 20, item.width - 4, 2, 0xd1ac79);
+    rect(8, 26, 5, 8, 0x635b49);
+    rect(item.width - 13, 26, 5, 8, 0x635b49);
+  } else if (item.kind === "garden-gate") {
+    rect(1, 0, 5, item.height, 0x806044);
+    rect(item.width - 6, 0, 5, item.height, 0x806044);
+    for (let x = 10; x < item.width - 8; x += 8) {
+      rect(x, 3, 5, item.height - 5, 0xc6a17d);
+      rect(x, 3, 5, 1, 0xe0c69c);
+    }
+    rect(6, 10, item.width - 12, 3, 0xa17b55);
+    rect(item.width / 2 + 4, 8, 3, 3, 0xe0bd72);
+  } else if (item.kind === "tree") {
+    rect(17, 31, 10, 25, 0x7b563d);
+    rect(7, 17, 30, 25, 0x5f8660);
+    rect(2, 23, 38, 18, 0x70996b);
+    rect(12, 10, 20, 22, 0x80a875);
+    rect(17, 4, 12, 14, 0x9abb80);
+    rect(8, 53, 26, 3, 0x6f8f68);
+  } else if (item.kind === "flower") {
+    rect(8, 11, 3, 11, 0x5f8b5e);
+    rect(4, 15, 11, 3, 0x6c9a63);
+    rect(7, 4, 7, 7, 0xe7a5a5);
+    rect(4, 7, 7, 5, 0xf0c177);
+    rect(10, 7, 7, 5, 0xf0c177);
+    rect(8, 7, 4, 4, 0xd28b61);
+  } else if (item.kind === "map-board") {
+    rect(0, 0, item.width, item.height, 0x5d493b);
+    rect(3, 3, item.width - 6, item.height - 6, 0xc6a875);
+    rect(7, 7, item.width - 14, item.height - 14, 0x9bb58c);
+    rect(12, 12, 18, 3, 0xd7c58e);
+    rect(34, 16, 22, 3, 0xd7c58e);
+    rect(18, 22, 3, 14, 0x718f72);
+    rect(17, 29, 22, 3, 0x718f72);
+    rect(47, 28, 3, 10, 0x718f72);
+    rect(7, item.height - 4, item.width - 14, 2, 0x8a6a50);
   } else if (item.kind === "sofa") {
     rect(0, 0, 100, 49, colors.outline);
     rect(3, 3, 94, 42, colors.sage);
