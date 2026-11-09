@@ -23,8 +23,25 @@ export function drawRoom(scene: Phaser.Scene, room: RoomDefinition): void {
   const rect = (x: number, y: number, w: number, h: number, color: number) => {
     brush.fillStyle(color).fillRect(x, y, w, h);
   };
-  rect(14, 27, 452, 279, room.theme === "garden" ? 0x3f6150 : 0x152836);
-  rect(20, 20, 440, 278, room.theme === "garden" ? 0x708a65 : colors.outline);
+  const isOutdoor = room.theme === "garden" || room.theme === "balcony";
+  rect(
+    14,
+    27,
+    452,
+    279,
+    isOutdoor ? (room.theme === "balcony" ? 0x111c35 : 0x3f6150) : 0x152836,
+  );
+  rect(
+    20,
+    20,
+    440,
+    278,
+    room.theme === "garden"
+      ? 0x708a65
+      : room.theme === "balcony"
+        ? 0x3c4d72
+        : colors.outline,
+  );
   rect(26, 26, 428, 64, colors.wall);
   rect(26, 82, 428, 210, colors.floor);
   if (room.theme === "kitchen") {
@@ -39,6 +56,14 @@ export function drawRoom(scene: Phaser.Scene, room: RoomDefinition): void {
         );
       }
     }
+  } else if (room.theme === "balcony") {
+    rect(26, 82, 428, 210, 0x273456);
+    for (let x = 30; x < 450; x += 38) {
+      rect(x, 85, 2, 207, 0x344269);
+      rect(x + 14, 104 + (x % 3) * 18, 3, 3, 0xe7d48b);
+    }
+    rect(26, 236, 428, 56, 0x6e7e9e);
+    for (let x = 32; x < 450; x += 22) rect(x, 244, 12, 2, 0x8e9db8);
   } else if (room.theme === "garden") {
     rect(26, 82, 428, 210, 0x8baa7e);
     for (const [x, y, width] of [
@@ -205,6 +230,23 @@ function drawWalls(
     rect(177, 31, 125, 4, 0xa58b66);
     rect(191, 35, 97, 19, 0x51675e);
     rect(199, 42, 81, 2, 0xa1b29b);
+  } else if (room.theme === "balcony") {
+    rect(26, 26, 428, 56, 0x182541);
+    for (const [x, y] of [
+      [62, 41],
+      [142, 32],
+      [224, 53],
+      [308, 38],
+      [397, 58],
+    ]) {
+      rect(x, y, 3, 3, 0xf3dda0);
+      rect(x + 5, y + 6, 2, 2, 0xd8c98c);
+    }
+    rect(26, 77, 428, 7, 0x7b8cab);
+    rect(26, 77, 428, 2, 0xc5c8c0);
+    rect(92, 39, 300, 3, 0x667897);
+    rect(92, 42, 3, 32, 0x667897);
+    rect(389, 42, 3, 32, 0x667897);
   } else if (room.theme === "garden") {
     rect(26, 26, 428, 56, 0x9ec5d0);
     rect(26, 52, 428, 30, 0x9ab997);
@@ -255,6 +297,16 @@ function drawFurniture(scene: Phaser.Scene, item: Furniture): void {
   if (item.kind === "npc") return;
   if (item.kind === "garden-entry") {
     drawGardenHouse(scene, item);
+    return;
+  }
+  if (item.kind === "telescope") {
+    const brush = scene.add.graphics().setDepth(1);
+    brush.fillStyle(0x6b5546).fillRect(item.x + 20, item.y + 34, 4, 28);
+    brush.fillStyle(0x6b5546).fillRect(item.x + 38, item.y + 34, 4, 28);
+    brush.fillStyle(0xb69a6e).fillRect(item.x + 10, item.y + 20, 43, 9);
+    brush.fillStyle(0x6b8794).fillRect(item.x + 18, item.y + 21, 27, 7);
+    brush.fillStyle(0xd4bb78).fillRect(item.x + 10, item.y + 18, 7, 13);
+    brush.fillStyle(0xd4bb78).fillRect(item.x + 45, item.y + 19, 8, 11);
     return;
   }
   if (item.kind === "painting") {

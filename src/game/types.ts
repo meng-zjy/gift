@@ -52,7 +52,8 @@ export interface Furniture extends Bounds {
     | "tree"
     | "flower"
     | "map-board"
-    | "garden-entry";
+    | "garden-entry"
+    | "telescope";
   solid?: boolean;
   artworkId?: ArtworkId;
   doorSide?: "left" | "right" | "bottom";
@@ -84,7 +85,13 @@ export interface RoomDefinition {
   name: string;
   floor: -1 | 1 | 2;
   theme:
-    "living" | "kitchen" | "bedroom" | "hallway" | "achievements" | "garden";
+    | "living"
+    | "kitchen"
+    | "bedroom"
+    | "hallway"
+    | "achievements"
+    | "garden"
+    | "balcony";
   hint: string;
   width: number;
   height: number;

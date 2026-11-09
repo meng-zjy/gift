@@ -3,6 +3,7 @@ import { bedroom } from "./bedroom";
 import { upperHall } from "./upperHall";
 import { achievementHall } from "./achievementHall";
 import { garden } from "./garden";
+import { balcony } from "./balcony";
 import type { RoomDefinition, Story } from "../game/types";
 
 export const stories: Record<string, Story> = {
@@ -53,6 +54,16 @@ export const stories: Record<string, Story> = {
     speaker: "卧室墙上的梵高",
     artworkId: "van-gogh-bedroom",
     paragraphs: ["梵高《卧室》，1889"],
+  },
+  "night-sky": {
+    id: "night-sky",
+    kind: "memory",
+    title: "把今晚的星星留给我们",
+    speaker: "阳台望远镜 · 演示内容",
+    paragraphs: [
+      "如果以后有一座真正属于我们的阳台，我想和你在这里看很久的星星。",
+      "把今天的风、远处的灯，还有你抬头时的样子，一起收进这一页。",
+    ],
   },
 };
 
@@ -130,4 +141,5 @@ export const rooms: Record<string, RoomDefinition> = {
   [upperHall.id]: upperHall,
   [achievementHall.id]: achievementHall,
   [garden.id]: garden,
+  [balcony.id]: balcony,
 };

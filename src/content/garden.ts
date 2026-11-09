@@ -10,7 +10,10 @@ export const garden: RoomDefinition = {
   height: 320,
   walkable: { x: 28, y: 82, width: 424, height: 208 },
   spawn: { x: 240, y: 108 },
-  entrances: { "from-living": { x: 240, y: 108 } },
+  entrances: {
+    "from-living": { x: 240, y: 108 },
+    "from-balcony": { x: 420, y: 220 },
+  },
   furniture: [
     {
       id: "garden-return",
@@ -50,7 +53,30 @@ export const garden: RoomDefinition = {
         action: { type: "collection", collection: "album" },
       },
     },
-    { id: "garden-tree", kind: "tree", x: 388, y: 220, width: 42, height: 58 },
+    {
+      id: "balcony-door",
+      kind: "door",
+      x: 442,
+      y: 148,
+      width: 18,
+      height: 48,
+      solid: false,
+      doorSide: "right",
+      interaction: {
+        label: "去星空阳台",
+        range: 36,
+        action: { type: "travel", roomId: "balcony", spawnId: "from-garden" },
+      },
+    },
+    {
+      id: "garden-tree",
+      kind: "tree",
+      x: 388,
+      y: 220,
+      width: 42,
+      height: 58,
+      solid: false,
+    },
     {
       id: "garden-flower-left",
       kind: "flower",
@@ -58,6 +84,7 @@ export const garden: RoomDefinition = {
       y: 130,
       width: 18,
       height: 22,
+      solid: false,
     },
     {
       id: "garden-flower-right",
@@ -66,6 +93,7 @@ export const garden: RoomDefinition = {
       y: 150,
       width: 18,
       height: 22,
+      solid: false,
     },
     {
       id: "garden-flowers-north",
@@ -74,6 +102,7 @@ export const garden: RoomDefinition = {
       y: 108,
       width: 18,
       height: 22,
+      solid: false,
     },
     {
       id: "garden-flowers-south",
@@ -82,6 +111,7 @@ export const garden: RoomDefinition = {
       y: 251,
       width: 18,
       height: 22,
+      solid: false,
     },
     {
       id: "garden-flowers-east",
@@ -90,6 +120,7 @@ export const garden: RoomDefinition = {
       y: 107,
       width: 18,
       height: 22,
+      solid: false,
     },
   ],
 };

@@ -196,6 +196,34 @@ test("the garden doorway opens a reusable outdoor memory space and returns home"
   await expectRoom(page, "客厅");
 });
 
+test("the garden side door opens the night balcony and the telescope story", async ({
+  page,
+}) => {
+  await enter(page);
+  await walkTo(page, "s", "y", 260);
+  await page.keyboard.press("e");
+  await expectRoom(page, "庭院");
+  await walkTo(page, "s", "y", 208);
+  await walkTo(page, "d", "x", 420);
+  await expect(page.getByRole("button", { name: /去星空阳台/ })).toBeEnabled();
+  await page.keyboard.press("e");
+  await expectRoom(page, "星空阳台");
+  await walkTo(page, "s", "y", 235);
+  await walkTo(page, "d", "x", 300);
+  await expect(
+    page.getByRole("button", { name: /看看今晚的星星/ }),
+  ).toBeEnabled();
+  await page.keyboard.press("e");
+  await expect(
+    page.getByRole("heading", { name: "把今晚的星星留给我们" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "关闭回忆", exact: true }).click();
+  await walkTo(page, "a", "x", 60);
+  await expect(page.getByRole("button", { name: /回到庭院/ })).toBeEnabled();
+  await page.keyboard.press("e");
+  await expectRoom(page, "庭院");
+});
+
 test("publish a real milestone, read its story and linked memory, and preserve it when resetting exploration", async ({
   page,
 }) => {
