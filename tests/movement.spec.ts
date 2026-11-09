@@ -10,6 +10,28 @@ import {
   stairY,
 } from "../src/game/stairs";
 
+test("garden furniture leaves the main path and house approach clear", () => {
+  const garden = rooms.garden;
+  const across = movePlayer(
+    { x: 40, y: 208 },
+    { x: 90, y: 0 },
+    400 / 90,
+    garden,
+  );
+  expect(across.x).toBeCloseTo(440);
+  const back = movePlayer(across, { x: -90, y: 0 }, 400 / 90, garden);
+  expect(back.x).toBeCloseTo(40);
+  const fromHouse = movePlayer(
+    { x: 240, y: 108 },
+    { x: 0, y: 90 },
+    100 / 90,
+    garden,
+  );
+  expect(fromHouse.y).toBeCloseTo(208);
+  const toHouse = movePlayer(fromHouse, { x: 0, y: -90 }, 100 / 90, garden);
+  expect(toHouse.y).toBeCloseTo(108);
+});
+
 test("both descending stairwells stop the whole foot body at their exposed side", () => {
   for (const room of Object.values(rooms)) {
     for (const stair of (room.stairs ?? []).filter(

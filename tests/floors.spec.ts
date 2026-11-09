@@ -179,8 +179,8 @@ test("the garden doorway opens a reusable outdoor memory space and returns home"
     path: "test-results/garden-room.png",
     fullPage: true,
   });
+  await walkTo(page, "s", "y", 208);
   await walkTo(page, "d", "x", 334);
-  await walkTo(page, "s", "y", 132);
   await expect(
     page.getByRole("button", { name: /查看我们的出游地图/ }),
   ).toBeEnabled();
@@ -189,8 +189,8 @@ test("the garden doorway opens a reusable outdoor memory space and returns home"
     page.getByRole("heading", { name: "一起去过的地方" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "关闭收藏" }).click();
-  await walkTo(page, "w", "y", 108);
   await walkTo(page, "a", "x", 240);
+  await walkTo(page, "w", "y", 108);
   await expect(page.getByRole("button", { name: /回到客厅/ })).toBeEnabled();
   await page.keyboard.press("e");
   await expectRoom(page, "客厅");

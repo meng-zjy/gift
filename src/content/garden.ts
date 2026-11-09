@@ -14,16 +14,15 @@ export const garden: RoomDefinition = {
   furniture: [
     {
       id: "garden-return",
-      kind: "garden-gate",
+      kind: "garden-entry",
       x: 204,
-      y: 78,
+      y: 40,
       width: 72,
-      height: 18,
-      solid: false,
-      doorSide: "bottom",
+      height: 56,
       interaction: {
         label: "回到客厅",
         range: 36,
+        area: { x: 228, y: 96, width: 24, height: 0 },
         action: {
           type: "travel",
           roomId: "living-room",
@@ -35,7 +34,7 @@ export const garden: RoomDefinition = {
       id: "garden-bench",
       kind: "bench",
       x: 84,
-      y: 185,
+      y: 146,
       width: 100,
       height: 34,
     },
@@ -43,9 +42,9 @@ export const garden: RoomDefinition = {
       id: "garden-map",
       kind: "map-board",
       x: 300,
-      y: 148,
+      y: 126,
       width: 72,
-      height: 42,
+      height: 60,
       interaction: {
         label: "查看我们的出游地图",
         action: { type: "collection", collection: "album" },

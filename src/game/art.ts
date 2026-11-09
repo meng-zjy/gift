@@ -52,6 +52,10 @@ export function drawRoom(scene: Phaser.Scene, room: RoomDefinition): void {
       rect(x + 3, y - 3, 2, 5, 0x70956e);
     }
     rect(28, 192, 424, 34, 0xb4a27b);
+    // A branch leads from the main path to the house door, keeping furniture off the route.
+    rect(226, 94, 28, 98, 0xb4a27b);
+    for (const y of [112, 138, 164, 186]) rect(230, y, 20, 2, 0xcab98e);
+    rect(80, 141, 108, 43, 0xa4b58a);
     for (const [x, y, width] of [
       [38, 198, 28],
       [92, 211, 20],
@@ -302,7 +306,7 @@ function drawFurniture(scene: Phaser.Scene, item: Furniture): void {
     "tree",
     "flower",
     "map-board",
-    "garden-gate",
+    "garden-entry",
   ].includes(item.kind);
   // Outdoor foliage casts a soft green shadow rather than a rectangular furniture base.
   if (outdoors) {
@@ -351,15 +355,32 @@ function drawFurniture(scene: Phaser.Scene, item: Furniture): void {
     rect(2, 20, item.width - 4, 2, 0xd1ac79);
     rect(8, 26, 5, 8, 0x635b49);
     rect(item.width - 13, 26, 5, 8, 0x635b49);
-  } else if (item.kind === "garden-gate") {
-    rect(1, 0, 5, item.height, 0x806044);
-    rect(item.width - 6, 0, 5, item.height, 0x806044);
-    for (let x = 10; x < item.width - 8; x += 8) {
-      rect(x, 3, 5, item.height - 5, 0xc6a17d);
-      rect(x, 3, 5, 1, 0xe0c69c);
+  } else if (item.kind === "garden-entry") {
+    // The house facade makes the destination visible from the courtyard.
+    rect(0, 0, item.width, item.height, 0xb7a58b);
+    rect(3, 3, item.width - 6, item.height - 6, 0xe0d8b9);
+    for (const y of [10, 20, 30, 40]) rect(3, y, item.width - 6, 1, 0xc6bda2);
+    for (let row = 0; row < 6; row++) {
+      const inset = (5 - row) * 3;
+      rect(
+        inset - 4,
+        row * 3 - 14,
+        item.width + 8 - inset * 2,
+        3,
+        row % 2 ? 0x826553 : 0x98745e,
+      );
     }
-    rect(6, 10, item.width - 12, 3, 0xa17b55);
-    rect(item.width / 2 + 4, 8, 3, 3, 0xe0bd72);
+    rect(-4, 3, item.width + 8, 3, 0x6c5544);
+    rect(24, 20, 24, 35, 0x6c5544);
+    rect(27, 23, 18, 31, 0xb28a5e);
+    rect(30, 26, 12, 10, 0xa4b9aa);
+    rect(40, 40, 3, 3, 0xe4c17c);
+    for (const x of [7, 53]) {
+      rect(x, 19, 12, 16, 0x98745e);
+      rect(x + 2, 21, 8, 11, 0xa4c2c0);
+      rect(x + 5, 21, 1, 11, 0xeee2bd);
+    }
+    rect(22, 53, 28, 3, 0xb1a38c);
   } else if (item.kind === "tree") {
     rect(17, 31, 10, 25, 0x7b563d);
     rect(7, 17, 30, 25, 0x5f8660);
@@ -375,15 +396,26 @@ function drawFurniture(scene: Phaser.Scene, item: Furniture): void {
     rect(10, 7, 7, 5, 0xf0c177);
     rect(8, 7, 4, 4, 0xd28b61);
   } else if (item.kind === "map-board") {
-    rect(0, 0, item.width, item.height, 0x5d493b);
-    rect(3, 3, item.width - 6, item.height - 6, 0xc6a875);
-    rect(7, 7, item.width - 14, item.height - 14, 0x9bb58c);
-    rect(12, 12, 18, 3, 0xd7c58e);
-    rect(34, 16, 22, 3, 0xd7c58e);
-    rect(18, 22, 3, 14, 0x718f72);
-    rect(17, 29, 22, 3, 0x718f72);
-    rect(47, 28, 3, 10, 0x718f72);
-    rect(7, item.height - 4, item.width - 14, 2, 0x8a6a50);
+    const boardHeight = item.height - 18;
+    rect(10, boardHeight - 2, 5, 20, 0x806044);
+    rect(item.width - 15, boardHeight - 2, 5, 20, 0x806044);
+    rect(0, 0, item.width, boardHeight, 0x5d493b);
+    rect(3, 3, item.width - 6, boardHeight - 6, 0xa58b63);
+    // A separate sheet with pinned corners reads as a map attached to a noticeboard.
+    rect(10, 7, item.width - 20, boardHeight - 14, 0xe5dcb8);
+    rect(15, 12, 16, 9, 0xa8bd92);
+    rect(40, 22, 15, 11, 0xa8bd92);
+    rect(25, 17, 3, 13, 0xbc9c70);
+    rect(25, 27, 24, 3, 0xbc9c70);
+    for (const [x, y] of [
+      [12, 9],
+      [item.width - 14, 9],
+      [25, 17],
+      [47, 27],
+    ]) {
+      rect(x, y, 3, 3, 0xc98276);
+    }
+    rect(1, 0, item.width - 2, 2, 0xc6a875);
   } else if (item.kind === "sofa") {
     rect(0, 0, 100, 49, colors.outline);
     rect(3, 3, 94, 42, colors.sage);

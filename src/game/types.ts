@@ -52,7 +52,7 @@ export interface Furniture extends Bounds {
     | "tree"
     | "flower"
     | "map-board"
-    | "garden-gate";
+    | "garden-entry";
   solid?: boolean;
   artworkId?: ArtworkId;
   doorSide?: "left" | "right" | "bottom";
