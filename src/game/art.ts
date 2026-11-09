@@ -3,6 +3,7 @@ import type { Furniture, RoomDefinition } from "./types";
 import { artworks } from "../content/artworks";
 import { drawStairwell } from "./stairArt";
 import { drawSideDoor } from "./doorArt";
+import { drawGardenHouse } from "./gardenHouseArt";
 
 const colors = {
   outline: 0x394554,
@@ -55,7 +56,6 @@ export function drawRoom(scene: Phaser.Scene, room: RoomDefinition): void {
     // A branch leads from the main path to the house door, keeping furniture off the route.
     rect(226, 94, 28, 98, 0xb4a27b);
     for (const y of [112, 138, 164, 186]) rect(230, y, 20, 2, 0xcab98e);
-    rect(80, 141, 108, 43, 0xa4b58a);
     for (const [x, y, width] of [
       [38, 198, 28],
       [92, 211, 20],
@@ -253,6 +253,10 @@ function drawWalls(
 
 function drawFurniture(scene: Phaser.Scene, item: Furniture): void {
   if (item.kind === "npc") return;
+  if (item.kind === "garden-entry") {
+    drawGardenHouse(scene, item);
+    return;
+  }
   if (item.kind === "painting") {
     const frame = scene.add.graphics().setDepth(1);
     frame.fillStyle(0x6c5544).fillRect(item.x, item.y, item.width, item.height);
@@ -355,32 +359,6 @@ function drawFurniture(scene: Phaser.Scene, item: Furniture): void {
     rect(2, 20, item.width - 4, 2, 0xd1ac79);
     rect(8, 26, 5, 8, 0x635b49);
     rect(item.width - 13, 26, 5, 8, 0x635b49);
-  } else if (item.kind === "garden-entry") {
-    // The house facade makes the destination visible from the courtyard.
-    rect(0, 0, item.width, item.height, 0xb7a58b);
-    rect(3, 3, item.width - 6, item.height - 6, 0xe0d8b9);
-    for (const y of [10, 20, 30, 40]) rect(3, y, item.width - 6, 1, 0xc6bda2);
-    for (let row = 0; row < 6; row++) {
-      const inset = (5 - row) * 3;
-      rect(
-        inset - 4,
-        row * 3 - 14,
-        item.width + 8 - inset * 2,
-        3,
-        row % 2 ? 0x826553 : 0x98745e,
-      );
-    }
-    rect(-4, 3, item.width + 8, 3, 0x6c5544);
-    rect(24, 20, 24, 35, 0x6c5544);
-    rect(27, 23, 18, 31, 0xb28a5e);
-    rect(30, 26, 12, 10, 0xa4b9aa);
-    rect(40, 40, 3, 3, 0xe4c17c);
-    for (const x of [7, 53]) {
-      rect(x, 19, 12, 16, 0x98745e);
-      rect(x + 2, 21, 8, 11, 0xa4c2c0);
-      rect(x + 5, 21, 1, 11, 0xeee2bd);
-    }
-    rect(22, 53, 28, 3, 0xb1a38c);
   } else if (item.kind === "tree") {
     rect(17, 31, 10, 25, 0x7b563d);
     rect(7, 17, 30, 25, 0x5f8660);
